@@ -43,8 +43,8 @@ app.get("/integrante", (req, res) => {
 
 // HTTPS credentials (Certbot)
 const httpsOptions = {
-    key: fs.readFileSync("/etc/letsencrypt/live/olgadle.nazadoto.com/privkey.pem"),
-    cert: fs.readFileSync("/etc/letsencrypt/live/olgadle.nazadoto.com/fullchain.pem"),
+    key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
+    cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
 };
 
 // Iniciar servidor HTTPS
