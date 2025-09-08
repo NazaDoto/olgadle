@@ -41,7 +41,7 @@
 
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : 'Ganaste'
-          }}</h2>
+        }}</h2>
         Volvé en {{ tiempoRestante }}
       </div>
       <!-- Historial -->
@@ -760,7 +760,7 @@ export default {
   /* Degradado + imagen de fondo */
   background-image:
     linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
-    url('bg.jpg');
+    url('/bg.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
