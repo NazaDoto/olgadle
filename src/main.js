@@ -4,11 +4,11 @@ import router from './router'
 import axios from 'axios';
 
 const url = 'http://localhost:3501';
-const env = 'dev';
+const env = 'prod';
 if (env == 'dev') {
     axios.defaults.baseURL = url;
 } else {
-    axios.defaults.baseURL = 'https://nazadoto.com:3700';
+    axios.defaults.baseURL = 'https://nazadoto.com:3501';
 }
 
 const app = createApp(App)
