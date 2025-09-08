@@ -1,0 +1,933 @@
+<template>
+  <div class="fondo-img"></div>
+  <div v-if="modalFin" class="fondoModal" @click="modalFin = false">
+    <div class="containerModal">
+      <div class="headerModal">{{ textoModal }}</div>
+      <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
+      <button class="btn-ok" @click="modalFin = false">Ok</button>
+    </div>
+  </div>
+  <div class="container py-5">
+    <div class="w-fit-content mx-auto">
+      <img src="/logo.png" class="logo" alt="">
+    </div>
+    <p class="lead text-center mt-2 mb-2 adivina-container">¡Adiviná el integrante de OLGA de hoy!</p>
+    <div v-if="cargando" class="loader-container">
+      <div class="spinner"></div>
+    </div>
+
+    <span v-else>
+      <span v-if="intentos > 0">
+
+        <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
+
+
+        <!-- Input y Autocomplete -->
+        <div class="mb-4 position-relative mx-auto" style="max-width: 400px;">
+          <input v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion" type="text"
+            class="form-control input-size" placeholder="Escribí un nombre..." :disabled="intentos < 0" />
+
+          <!-- Autocomplete -->
+          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
+            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
+            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
+              <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square mb-2" />
+              {{ opcion.nombre }}
+            </li>
+          </ul>
+        </div>
+      </span>
+
+      <div v-else class="c-white text-center mb-2">
+        <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : 'Ganaste'
+          }}</h2>
+        Volvé en {{ tiempoRestante }}
+      </div>
+      <!-- Historial -->
+      <div class="mx-auto">
+
+        <!-- Encabezados de atributos -->
+        <div v-if="historial.length > 0"
+          class="d-flex flex-row gap-1 text-center align-items-center w-fit-content mx-auto fs-small c-white">
+          <div class="col-width">Integrante</div>
+          <div class="col-width">Género</div>
+          <div class="col-width">Programa</div>
+          <div class="col-width">Rol</div>
+          <div class="col-width">¿Canta?</div>
+          <div class="col-width">Trabaja/ó en</div>
+          <div class="col-width">Nació</div>
+        </div>
+
+        <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto">
+          <li v-for="(item) in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744">
+            <div class="square relative" v-show="item.img && item.mostrar.img">
+              <div class="inset-shadow absolute-100 rounded"></div>
+              <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
+            </div>
+
+            <div class="square padding-text" :class="atributoColor(item, 'genero')" v-show="item.mostrar.genero">
+              {{ item.genero }}
+            </div>
+
+            <div class="square padding-text" :class="atributoColor(item, 'programa')" v-show="item.mostrar.programa">
+              {{ item.programa.join(' / ') }}
+            </div>
+            <div class="square padding-text" :class="atributoColor(item, 'rol')" v-show="item.mostrar.rol">
+              {{ item.rol }}
+            </div>
+
+            <div class="square padding-text" :class="atributoColor(item, 'canta')" v-show="item.mostrar.canta">
+              {{ item.canta }}
+            </div>
+
+            <div class="square padding-text" :class="atributoColor(item, 'canalAnterior')"
+              v-show="item.mostrar.canalAnterior">
+              {{ item.canalAnterior }}
+            </div>
+
+            <div class="square padding-text" :class="atributoColor(item, 'nacio')" v-show="item.mostrar.nacio">
+              {{ item.nacio }}
+            </div>
+
+          </li>
+        </ul>
+      </div>
+    </span>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+export default {
+  name: "Olgadle",
+  data() {
+    return {
+      cargando: true,
+      tiempoRestante: "00:00:00",
+      timer: null,
+      modalFin: false,
+      textoModal: '',
+      historial: JSON.parse(localStorage.getItem('historial')) || [],
+      mostrarOpciones: false,
+      integrantes: [
+        {
+          img: "ariel.jpg",
+          nombre: "Ariel Senosiain",
+          genero: "Masculino",
+          programa: ["GOLGANA"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "TyC Sports",
+          nacio: "1979",
+        },
+        {
+          img: "benja.jpg",
+          nombre: "Benjamín Amadeo",
+          genero: "Masculino",
+          programa: ["SQV"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Actuación",
+          nacio: "1984",
+        },
+        {
+          img: "betu.jpg",
+          nombre: "Damián Betular",
+          genero: "Masculino",
+          programa: ["Sería Increíble"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Telefe",
+          nacio: "1982",
+        },
+        {
+          img: "camijara.jpg",
+          nombre: "Cami Jara",
+          genero: "Femenino",
+          programa: ["TDT"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Streamer",
+          nacio: "2003",
+        },
+        {
+          img: "caropardiaco.jpg",
+          nombre: "Caro Pardíaco",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Invitado",
+          canta: "Sí",
+          canalAnterior: "Telefe",
+          nacio: "1983",
+        },
+        {
+          img: "coker.jpg",
+          nombre: "Coker",
+          genero: "Masculino",
+          programa: ["GOLGANA"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Streamer",
+          nacio: "1997",
+        },
+        {
+          img: "davidovsky.jpg",
+          nombre: "Sebastián Davidovsky",
+          genero: "Masculino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Periodista",
+          nacio: "1984",
+        },
+        {
+          img: "eial.jpg",
+          nombre: "Eial Moldavsky",
+          genero: "Masculino",
+          programa: ["Sería Increíble", "Faltan Varones"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Influencer",
+          nacio: "1991",
+        },
+        {
+          img: "edul.jpg",
+          nombre: "Gastón Edul",
+          genero: "Masculino",
+          programa: ["GOLGANA"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "TyC Sports",
+          nacio: "1995",
+        },
+        {
+          img: "eve.jpg",
+          nombre: "Evelyn Botto",
+          genero: "Femenino",
+          programa: ["TDL", "Mi Primo Es Así"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Urbana Play",
+          nacio: "1992",
+        },
+        {
+          img: "evitta.jpg",
+          nombre: "Evitta Luna",
+          genero: "Femenino",
+          programa: ["SQV", "EFDM"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Blender",
+          nacio: "1998",
+        },
+        {
+          img: "ferdente.jpg",
+          nombre: "Fer Dente",
+          genero: "Masculino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Actuación",
+          nacio: "1990",
+        },
+        {
+          img: "ferotero.jpg",
+          nombre: "Fer Otero",
+          genero: "Femenino",
+          programa: ["EFDM"],
+          rol: "Columnista",
+          canta: "No",
+          canalAnterior: "Influencer",
+          nacio: "1987",
+        },
+        {
+          img: "geuna.jpg",
+          nombre: "Luciana Geuna",
+          genero: "Femenino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Periodista",
+          nacio: "1977",
+        },
+        {
+          img: "giani.jpg",
+          nombre: "Giani Odoguardi",
+          genero: "Masculino",
+          programa: ["TDT"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Luzu TV",
+          nacio: "2000",
+        },
+        {
+          img: "homero.jpg",
+          nombre: "Homero Pettinato",
+          genero: "Masculino",
+          programa: ["Sería Increíble", "Faltan Varones"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Rock & Pop",
+          nacio: "1987",
+        },
+        {
+          img: "lizy.jpg",
+          nombre: "Lizy Tagliani",
+          genero: "Femenino",
+          programa: ["EFDM"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Pop Radio",
+          nacio: "1970",
+        },
+        {
+          img: "luli.jpg",
+          nombre: "Luli González",
+          genero: "Femenino",
+          programa: ["TDL"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Youtuber",
+          nacio: "2003",
+        },
+        {
+          img: "lucas.jpg",
+          nombre: "Lucas Fridman",
+          genero: "Masculino",
+          programa: ["SQV"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Vorterix",
+          nacio: "1987",
+        },
+        {
+          img: "marti.jpg",
+          nombre: "Marti Benza",
+          genero: "Femenino",
+          programa: ["SQV", "TDT"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Luzu TV",
+          nacio: "2000",
+        },
+        {
+          img: "rechi.jpg",
+          nombre: "Martín Rechimuzzi",
+          genero: "Masculino",
+          programa: ["Mi Primo Es Así"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Actuación",
+          nacio: "1987",
+        },
+        {
+          img: "migue.jpg",
+          nombre: "Migue Granados",
+          genero: "Masculino",
+          programa: ["SQV"],
+          rol: "Conductor",
+          canta: "Sí",
+          canalAnterior: "Vorterix",
+          nacio: "1986",
+        },
+        {
+          img: "morte.jpg",
+          nombre: "Mortedor",
+          genero: "Masculino",
+          programa: ["TDL"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Streamer",
+          nacio: "2002",
+        },
+        {
+          img: "nachito.jpg",
+          nombre: "Nachito Elizalde",
+          genero: "Masculino",
+          programa: ["TDL"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Luzu TV",
+          nacio: "1988",
+        },
+        {
+          img: "natijota.jpg",
+          nombre: "Nati Jota",
+          genero: "Femenino",
+          programa: ["Sería Increíble"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Luzu TV",
+          nacio: "1994",
+        },
+        {
+          img: "nicoferrero.jpg",
+          nombre: "Nico Ferrero",
+          genero: "Femenino",
+          programa: ["TDT"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Luzu TV",
+          nacio: "2000",
+        },
+        {
+          img: "paula.jpg",
+          nombre: "Paula Chaves",
+          genero: "Femenino",
+          programa: ["TDL"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Telefe",
+          nacio: "1984",
+        },
+        {
+          img: "pelao.jpg",
+          nombre: "Pelao Khe",
+          genero: "Masculino",
+          programa: ["TDL", "Faltan Varones"],
+          rol: "Invitado / Conductor",
+          canta: "No",
+          canalAnterior: "Influencer",
+          nacio: "1997",
+        },
+        {
+          img: "peter.jpg",
+          nombre: "Peter Alfonso",
+          genero: "Masculino",
+          programa: ["GOLGANA", "Faltan Varones"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Actuación",
+          nacio: "1979",
+        },
+        {
+          img: "pollo.jpg",
+          nombre: "Pollo Álvarez",
+          genero: "Masculino",
+          programa: ["GOLGANA"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Infobae",
+          nacio: "1983",
+        },
+        {
+          img: "reich.jpg",
+          nombre: "Martín Reich",
+          genero: "Masculino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Telefe",
+          nacio: "1983",
+        },
+        {
+          img: "tania.jpg",
+          nombre: "Tania Wedeltoft",
+          genero: "Femenino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Metro 98.7",
+          nacio: "1983",
+        },
+        {
+          img: "toto.jpg",
+          nombre: "Toto Kirzner",
+          genero: "Masculino",
+          programa: ["Mi Primo Es Así", "EFDM"],
+          rol: "Conductor",
+          canta: "No",
+          canalAnterior: "Actuación",
+          nacio: "1998",
+        }
+      ]
+      , integranteOculto: null,
+      intentos: localStorage.getItem('intentos') || 5,
+      intento: "",
+      mostrarOpciones: false
+    };
+  },
+
+  computed: {
+    opcionesFiltradas() {
+      if (!this.intento) return this.integrantes;
+      return this.integrantes.filter((i) =>
+        i.nombre.toLowerCase().includes(this.intento.toLowerCase())
+      );
+    },
+  },
+
+  methods: {
+    async fetchIntegrante() {
+      try {
+        const response = await axios.get('/integrante');
+        this.integranteOculto = this.integrantes[response.data.integrante];
+        this.startTimer(response.data.tiempoRestante);
+        if (localStorage.getItem('integranteOculto') && localStorage.getItem('integranteOculto') != response.data.integrante) {
+          localStorage.clear();
+          location.reload();
+        }
+        localStorage.setItem('integranteOculto', response.data.integrante);
+      } catch (error) {
+        console.log('error');
+      } finally {
+        this.cargando = false;
+      }
+    },
+    revelarAtributos(item) {
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
+
+      atributos.forEach((attr, index) => {
+        setTimeout(() => {
+          item.mostrar[attr] = true;
+        }, index * 600);
+      });
+      setTimeout(() => {
+        localStorage.setItem('historial', JSON.stringify(this.historial));
+        if (item.nombre == this.integranteOculto.nombre) {
+          this.mostrarModal('GANASTE!!!');
+          this.intentos = -1;
+          localStorage.setItem('intentos', -1);
+        } else if (this.intentos == 0) {
+          this.mostrarModal('Perdiste :(');
+        }
+      }, atributos.length * 600);
+    },
+    mostrarModal(texto) {
+      this.modalFin = true;
+      this.textoModal = texto;
+    },
+    segundosAHHMMSS(segundos) {
+      const h = Math.floor(segundos / 3600).toString().padStart(2, "0");
+      const m = Math.floor((segundos % 3600) / 60).toString().padStart(2, "0");
+      const s = Math.floor(segundos % 60).toString().padStart(2, "0");
+      return `${h}:${m}:${s}`;
+    },
+
+    startTimer(segundos) {
+      // Cancelar cualquier timer anterior
+      if (this.timer) clearInterval(this.timer);
+
+      let remaining = segundos;
+      this.tiempoRestante = this.segundosAHHMMSS(remaining);
+
+      this.timer = setInterval(() => {
+        remaining--;
+        if (remaining < 0) {
+          clearInterval(this.timer);
+          this.tiempoRestante = "00:00:00";
+          return;
+        }
+        this.tiempoRestante = this.segundosAHHMMSS(remaining);
+      }, 1000);
+    },
+    adivinar(integrante) {
+      if (!integrante) return;
+
+      const correcto = integrante.nombre === this.integranteOculto.nombre;
+
+      // Crear un objeto con los atributos, todos ocultos al principio
+      const nuevoItem = {
+        ...integrante,
+        correcto,
+        mostrar: {
+          img: false,
+          genero: false,
+          rol: false,
+          canta: false,
+          canalAnterior: false,
+          programa: false
+        }
+      };
+
+      this.historial.push(nuevoItem);
+      this.intentos--;
+      localStorage.setItem('intentos', this.intentos);
+      this.intento = "";
+      this.mostrarOpciones = false;
+
+
+      // Eliminar el integrante del arreglo de opciones
+      const index = this.integrantes.findIndex(i => i.nombre === integrante.nombre);
+      if (index !== -1) {
+        this.integrantes.splice(index, 1);
+      }
+      // Mostrar los atributos uno a uno
+      this.revelarAtributos(this.historial[this.historial.length - 1]);
+    },
+
+
+    enterSeleccion() {
+      if (this.opcionesFiltradas.length > 0) {
+        this.adivinar(this.opcionesFiltradas[0]);
+      }
+    },
+
+    atributoColor(item, atributo) {
+      const valorOculto = this.integranteOculto[atributo];
+
+      if (Array.isArray(item[atributo])) {
+        const intersect = item[atributo].filter((v) => valorOculto.includes(v));
+        if (intersect.length === valorOculto.length && intersect.length === item[atributo].length)
+          return "bg-success text-white p-1 rounded";
+        if (intersect.length > 0) return "bg-warning text-dark p-1 rounded";
+        return "bg-danger text-white p-1 rounded";
+      }
+
+      if (item[atributo] === valorOculto) return "bg-success text-white p-1 rounded";
+      if (atributo === "rol" || atributo === "programa") {
+        if (Array.isArray(valorOculto) && valorOculto.includes(item[atributo])) return "bg-warning text-dark p-1 rounded";
+      }
+      return "bg-danger text-white p-1 rounded";
+    },
+    handleClickOutside(event) {
+      const container = this.$refs.containerRef;
+      if (container && !container.contains(event.target)) {
+        this.mostrarOpciones = false;
+      }
+    }
+  },
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+    this.fetchIntegrante();
+    // Filtrar integrantes que ya están en historial
+    if (this.historial.length > 0) {
+      const nombresHistorial = this.historial.map(i => i.nombre);
+      this.integrantes = this.integrantes.filter(i => !nombresHistorial.includes(i.nombre));
+    }
+  },
+  unmounted() {
+    document.removeEventListener("click", this.handleClickOutside);
+    if (this.timer) clearInterval(this.timer);
+
+  }
+};
+</script>
+
+<style>
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  color: white;
+  /* ajustá según tu fondo */
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  /* color principal */
+  border-radius: 50%;
+  animation: girar 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.texto-ganaste {
+  font-weight: bold;
+  color: rgb(0, 255, 0);
+}
+
+.texto-perdiste {
+  font-weight: bold;
+  color: rgb(255, 0, 0);
+}
+
+.m-auto {
+  margin: auto;
+}
+
+.slide-enter-active {
+  transition: all 0.5s ease;
+}
+
+.slide-leave-active {
+  transition: all 0.5s ease;
+  position: absolute;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.slide-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.barra-nav::-webkit-scrollbar {
+  width: 30px;
+}
+
+.barra-nav::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 61, 61, 0.9);
+  /* Color de la barra */
+}
+
+.barra-nav::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 61, 61, 1);
+  /* Color al pasar el cursor */
+}
+
+.barra-nav::-webkit-scrollbar-track {
+  background-color: rgba(255, 61, 61, 0.3);
+  /* Color del track */
+}
+
+.inset-shadow {
+  box-shadow: inset 0 0 6px #000;
+}
+
+.select-integrantes {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.input-size {
+  height: 50px;
+}
+
+.adivina-container {
+  color: white;
+  background-color: rgb(255, 47, 47);
+  border-radius: 10px;
+  padding: 20px 10px;
+  font-weight: bold;
+  box-shadow: inset 0 0 6px #2200ff;
+  text-shadow: 1px 1px 4px black;
+  width: fit-content;
+  margin: auto;
+}
+
+.c-white {
+  color: white;
+  text-shadow: 1px 1px 4px black;
+}
+
+.logo {
+  width: 150px;
+  height: 150px;
+}
+
+.list-group {
+  border-radius: 0;
+}
+
+.form-control {
+  border-radius: 0;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute-100 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fondo-img {
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Degradado + imagen de fondo */
+  background-image:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
+    url('bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.fondoModal {
+  position: fixed;
+  inset: 0;
+  /* top:0, right:0, bottom:0, left:0 */
+  background: rgba(0, 0, 0, 0.6);
+  /* gris/negro translúcido */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.containerModal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  animation: aparecer 0.3s ease;
+}
+
+.headerModal {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #333;
+}
+
+.bodyModal {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.btn-ok {
+  display: block;
+  margin: 0 auto;
+  padding: 10px 20px;
+  background: #007bff;
+  /* azul lindo */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.btn-ok:hover {
+  background: #0056b3;
+}
+
+/* Animación de entrada */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+img {
+  object-fit: cover;
+}
+
+.col-width {
+  width: 100px !important;
+  position: relative;
+}
+
+.col-width::after {
+  display: block;
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  border-bottom: white 3px solid;
+  content: '';
+  width: 90%;
+  margin: 0 5px;
+}
+
+.fs-small {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.list-group-item {
+
+  border: none;
+  padding: 10px;
+}
+
+.w-744 {
+  width: calc(744px);
+}
+
+.bg-none {
+  background: none;
+}
+
+/* Imagen cuadrada */
+.img-square {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+.square {
+  width: 100px !important;
+  height: 100px;
+  align-content: center;
+  text-align: center;
+  vertical-align: middle;
+  object-fit: cover;
+}
+
+.padding-text {
+  padding: 0 5px;
+}
+
+/* Centrado de texto dentro de las columnas */
+.list-group-item .col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.cursor-pointer:hover {
+  cursor: pointer;
+}
+
+.w-fit-content {
+  width: fit-content;
+}
+
+.bg-danger {
+  background-color: red !important;
+  box-shadow: inset 0 0 6px #000;
+}
+
+.bg-success {
+  background-color: green !important;
+  box-shadow: inset 0 0 6px #000;
+}
+
+.bg-warning {
+  box-shadow: inset 0 0 6px #000;
+}
+</style>
