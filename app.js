@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import https from "https";
 
 const app = express();
 app.use(cors());
@@ -39,8 +41,14 @@ app.get("/integrante", (req, res) => {
     });
 });
 
-// Iniciar servidor
+// HTTPS credentials (Certbot)
+const httpsOptions = {
+    key: fs.readFileSync("/etc/letsencrypt/live/olgadle.nazadoto.com/privkey.pem"),
+    cert: fs.readFileSync("/etc/letsencrypt/live/olgadle.nazadoto.com/fullchain.pem"),
+};
+
+// Iniciar servidor HTTPS
 const PORT = process.env.PORT || 3501;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
 });
