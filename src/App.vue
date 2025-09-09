@@ -113,7 +113,7 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "Olgadle",
+  name: "OLGAdle",
   data() {
     return {
       cargando: true,
@@ -123,7 +123,6 @@ export default {
       modalFin: false,
       textoModal: '',
       historial: JSON.parse(localStorage.getItem('historial')) || [],
-      mostrarOpciones: false,
       integrantes: [
         {
           img: "ariel.jpg",
@@ -531,7 +530,7 @@ export default {
         }
         localStorage.setItem('integranteOculto', response.data.integrante);
       } catch (error) {
-        console.log('error');
+        console.log('error'+ error);
       } finally {
         this.cargando = false;
       }
