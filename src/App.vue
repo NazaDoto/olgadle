@@ -113,7 +113,7 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "Olgadle",
+  name: "OlgadleApp",
   data() {
     return {
       cargando: true,
@@ -538,6 +538,7 @@ export default {
     revelarAtributos(item) {
       const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
 
+
       atributos.forEach((attr, index) => {
         setTimeout(() => {
           item.mostrar[attr] = true;
@@ -546,7 +547,6 @@ export default {
       setTimeout(() => {
         this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...';
         this.$refs.inputIntegrante.disabled = false;
-        localStorage.setItem('historial', JSON.stringify(this.historial));
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
@@ -605,11 +605,14 @@ export default {
           rol: false,
           canta: false,
           canalAnterior: false,
-          programa: false
+          programa: false,
+          nacio: false,
         }
       };
 
       this.historial.push(nuevoItem);
+      localStorage.setItem('historial', JSON.stringify(this.historial));
+
       this.intentos--;
       localStorage.setItem('intentos', this.intentos);
       this.intento = "";
@@ -659,6 +662,12 @@ export default {
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
     this.fetchIntegrante();
+    if (this.historial.length > 0 ){
+      this.historial.forEach((item) => {
+        // Asegurarse de que todos los atributos estén visibles
+        this.revelarAtributos(item);
+      });
+    }
 
   },
   unmounted() {
