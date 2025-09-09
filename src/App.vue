@@ -113,7 +113,7 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "OLGAdle",
+  name: "Olgadle",
   data() {
     return {
       cargando: true,
