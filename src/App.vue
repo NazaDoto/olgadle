@@ -49,7 +49,7 @@
 
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : '¡Ganaste!'
-          }}</h2>
+        }}</h2>
         <span v-if="intentos != 0">
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
@@ -271,7 +271,7 @@ export default {
           rol: "Conductor",
           canta: "No",
           canalAnterior: "Luzu TV",
-          nacio: "2000",
+          nacio: "2001",
         },
         {
           img: "homero.jpg",
