@@ -41,7 +41,7 @@
             class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
             <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
               class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
-              <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square mb-2" />
+              <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square" />
               {{ opcion.nombre }}
             </li>
           </ul>
@@ -465,16 +465,32 @@ export default {
 
   computed: {
     opcionesFiltradas() {
-      if (!this.intento) {
-        return this.integrantes;
-      }
-      // Excluir ya intentados del historial solo en la búsqueda
-      const nombresHistorial = this.historial.map(i => i.nombre);
+  if (!this.intento) {
+    return this.integrantes;
+  }
 
-      return this.integrantes
-        .filter(i => !nombresHistorial.includes(i.nombre))
-        .filter(i => i.nombre.toLowerCase().includes(this.intento.toLowerCase()));
-    }
+  const nombresHistorial = this.historial.map(i => i.nombre);
+  const input = this.intento.toLowerCase();
+
+  return this.integrantes
+    .filter(i => !nombresHistorial.includes(i.nombre))
+    .filter(i => i.nombre.toLowerCase().includes(input))
+    .sort((a, b) => {
+      const nombreA = a.nombre.toLowerCase();
+      const nombreB = b.nombre.toLowerCase();
+
+      // Contar coincidencias de letras en orden
+      const countMatches = (nombre) => {
+        let count = 0;
+        for (let i = 0; i < input.length; i++) {
+          if (nombre[i] === input[i]) count++;
+        }
+        return count;
+      }
+
+      return countMatches(nombreB) - countMatches(nombreA); // descendente
+    });
+}
   },
 
   methods: {
@@ -939,7 +955,9 @@ body {
 .text-sm {
   font-size: 0.875rem;
 }
-
+.list-group{
+  gap:1px;
+}
 .list-group-item {
   border: none;
   padding: 0;
