@@ -29,12 +29,13 @@
     </div>
 
     <span v-else>
-      <span v-if="!terminado">
+      <span v-if="terminado == 0">
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px;">
-          <input v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion" type="text"
-            class="form-control input-size" placeholder="Escribí un nombre..." />
+          <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
+            type="text" class="form-control input-size" placeholder="Escribí un nombre..."
+            :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
           <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
             class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
@@ -48,7 +49,8 @@
       </span>
 
       <div v-else class="c-white text-center mb-2">
-        <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : '¡Ganaste!'
+        <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
+          '¡Ganaste!'
           }}</h2>
         <span v-if="intentos != 0">
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
@@ -457,7 +459,7 @@ export default {
       , integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 5,
       intento: "",
-      terminado: Boolean(localStorage.getItem('terminado')) || false,
+      terminado: localStorage.getItem('terminado') || 0,
       mostrarOpciones: false
     };
   },
@@ -543,14 +545,16 @@ export default {
         }, index * 600);
       });
       setTimeout(() => {
+        this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...';
+        this.$refs.inputIntegrante.disabled = false;
         localStorage.setItem('historial', JSON.stringify(this.historial));
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
-          this.terminado = true;
+          this.terminado = 1;
           localStorage.setItem('terminado', this.terminado);
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
-          this.terminado = true;
+          this.terminado = -1;
           localStorage.setItem('terminado', this.terminado);
         }
       }, atributos.length * 600);
@@ -581,9 +585,13 @@ export default {
           return;
         }
         this.tiempoRestante = this.segundosAHHMMSS(remaining);
+
       }, 1000);
     },
     adivinar(integrante) {
+      this.$refs.inputIntegrante.placeholder = 'Verificando...';
+      this.$refs.inputIntegrante.disabled = true;
+
       if (!integrante) return;
 
       const correcto = integrante.nombre === this.integranteOculto.nombre;
