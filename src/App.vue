@@ -1,12 +1,24 @@
 <template>
   <div class="fondo-img"></div>
-  <div v-if="modalFin" class="fondoModal" @click="modalFin = false">
+  <div v-if="modalFin && textoModal === 'Perdiste :('" class="fondoModal" @click="modalFin = false">
     <div class="containerModal">
       <div class="headerModal">{{ textoModal }}</div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
-      <button class="btn-ok" @click="modalFin = false">Ok</button>
+      <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
     </div>
   </div>
+
+  <!-- Modal Ganador -->
+  <div v-if="modalFin && textoModal === 'GANASTE!!!'" class="fondoModal" @click="modalFin = false">
+    <div class="containerModal" @click.stop>
+      <div class="headerModal">🎉 ¡Ganaste!</div>
+      <div class="bodyModal">Lo lograste en {{ 5 - intentos }}/5 intentos</div>
+      <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
+      <p class="bodyModal" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
+      <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
+    </div>
+  </div>
+
   <div class="container py-5">
     <div class="w-fit-content mx-auto">
       <img src="/logo.png" class="logo" alt="">
@@ -17,16 +29,12 @@
     </div>
 
     <span v-else>
-      <span v-if="intentos > 0">
-
+      <span v-if="!terminado">
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
-
-
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px;">
           <input v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion" type="text"
-            class="form-control input-size" placeholder="Escribí un nombre..." :disabled="intentos < 0" />
-
+            class="form-control input-size" placeholder="Escribí un nombre..." />
           <!-- Autocomplete -->
           <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
             class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
@@ -40,13 +48,16 @@
       </span>
 
       <div v-else class="c-white text-center mb-2">
-        <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : 'Ganaste'
+        <h2 :class="(intentos == 0) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (intentos == 0) ? 'Perdiste' : '¡Ganaste!'
         }}</h2>
+        <span v-if="intentos != 0">
+          <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
+          <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
+        </span>
         Volvé en {{ tiempoRestante }}
       </div>
       <!-- Historial -->
       <div class="mx-auto">
-
         <!-- Encabezados de atributos -->
         <div v-if="historial.length > 0"
           class="d-flex flex-row gap-1 text-center align-items-center w-fit-content mx-auto fs-small c-white">
@@ -106,6 +117,7 @@ export default {
       cargando: true,
       tiempoRestante: "00:00:00",
       timer: null,
+      mostrarCopiado: false,
       modalFin: false,
       textoModal: '',
       historial: JSON.parse(localStorage.getItem('historial')) || [],
@@ -445,20 +457,67 @@ export default {
       , integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 5,
       intento: "",
+      terminado: Boolean(localStorage.getItem('terminado')) || false,
       mostrarOpciones: false
     };
   },
 
   computed: {
     opcionesFiltradas() {
-      if (!this.intento) return this.integrantes;
-      return this.integrantes.filter((i) =>
-        i.nombre.toLowerCase().includes(this.intento.toLowerCase())
-      );
-    },
+      if (!this.intento) {
+        return this.integrantes;
+      }
+      // Excluir ya intentados del historial solo en la búsqueda
+      const nombresHistorial = this.historial.map(i => i.nombre);
+
+      return this.integrantes
+        .filter(i => !nombresHistorial.includes(i.nombre))
+        .filter(i => i.nombre.toLowerCase().includes(this.intento.toLowerCase()));
+    }
   },
 
   methods: {
+    compartirResultado() {
+      // Crear representación tipo Wordle
+      let resultado = `Olgadle del día ${new Date().toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit'
+      })} en ${(5 - this.intentos)}/5 intentos\n\n`;
+
+      this.historial.forEach((item) => {
+        let fila = "";
+
+        // Recorremos atributos importantes
+        const atributos = ["genero", "programa", "rol", "canta", "canalAnterior", "nacio"];
+        atributos.forEach((attr) => {
+          const valorOculto = this.integranteOculto[attr];
+
+          if (Array.isArray(item[attr])) {
+            const intersect = item[attr].filter((v) => valorOculto.includes(v));
+            if (intersect.length === valorOculto.length && intersect.length === item[attr].length) {
+              fila += "🟩";
+            } else if (intersect.length > 0) {
+              fila += "🟨";
+            } else {
+              fila += "🟥";
+            }
+          } else {
+            if (item[attr] === valorOculto) {
+              fila += "🟩";
+            } else {
+              fila += "🟥";
+            }
+          }
+        });
+
+        resultado += fila + "\n";
+      });
+
+      // Copiar al portapapeles
+      navigator.clipboard.writeText(resultado).then(() => {
+        this.mostrarCopiado = true;
+      });
+    },
     async fetchIntegrante() {
       try {
         const response = await axios.get('/integrante');
@@ -487,10 +546,12 @@ export default {
         localStorage.setItem('historial', JSON.stringify(this.historial));
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
-          this.intentos = -1;
-          localStorage.setItem('intentos', -1);
+          this.terminado = true;
+          localStorage.setItem('terminado', this.terminado);
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
+          this.terminado = true;
+          localStorage.setItem('terminado', this.terminado);
         }
       }, atributos.length * 600);
     },
@@ -591,11 +652,7 @@ export default {
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
     this.fetchIntegrante();
-    // Filtrar integrantes que ya están en historial
-    if (this.historial.length > 0) {
-      const nombresHistorial = this.historial.map(i => i.nombre);
-      this.integrantes = this.integrantes.filter(i => !nombresHistorial.includes(i.nombre));
-    }
+
   },
   unmounted() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -748,6 +805,10 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+.c-red {
+  background-color: rgb(255, 47, 47) !important;
 }
 
 .fondo-img {
