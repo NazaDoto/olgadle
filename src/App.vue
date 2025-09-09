@@ -57,21 +57,21 @@
         Volvé en {{ tiempoRestante }}
       </div>
       <!-- Historial -->
-      <div class="mx-auto">
+      <div class="mx-auto" id="historialContainer">
         <!-- Encabezados de atributos -->
         <div v-if="historial.length > 0"
-          class="d-flex flex-row gap-1 text-center align-items-center w-fit-content mx-auto fs-small c-white">
+          class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2">
           <div class="col-width">Integrante</div>
           <div class="col-width">Género</div>
           <div class="col-width">Programa</div>
           <div class="col-width">Rol</div>
           <div class="col-width">¿Canta?</div>
-          <div class="col-width">Trabaja/ó en</div>
+          <div class="col-width">Hizo</div>
           <div class="col-width">Nació</div>
         </div>
 
         <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto">
-          <li v-for="(item) in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744">
+          <li v-for="(item) in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744 mb-1">
             <div class="square relative" v-show="item.img && item.mostrar.img">
               <div class="inset-shadow absolute-100 rounded"></div>
               <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
@@ -160,7 +160,7 @@ export default {
           programa: ["TDT"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Streamer",
+          canalAnterior: "Streams",
           nacio: "2003",
         },
         {
@@ -180,7 +180,7 @@ export default {
           programa: ["GOLGANA"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Streamer",
+          canalAnterior: "Streams",
           nacio: "1997",
         },
         {
@@ -190,7 +190,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Periodista",
+          canalAnterior: "Periodismo",
           nacio: "1984",
         },
         {
@@ -200,7 +200,7 @@ export default {
           programa: ["Sería Increíble", "Faltan Varones"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Influencer",
+          canalAnterior: "IG/TikTok",
           nacio: "1991",
         },
         {
@@ -250,7 +250,7 @@ export default {
           programa: ["EFDM"],
           rol: "Columnista",
           canta: "No",
-          canalAnterior: "Influencer",
+          canalAnterior: "IG/TikTok",
           nacio: "1987",
         },
         {
@@ -260,7 +260,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Periodista",
+          canalAnterior: "Periodismo",
           nacio: "1977",
         },
         {
@@ -300,7 +300,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Youtuber",
+          canalAnterior: "Youtube",
           nacio: "2003",
         },
         {
@@ -350,7 +350,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Streamer",
+          canalAnterior: "Streams",
           nacio: "2002",
         },
         {
@@ -400,7 +400,7 @@ export default {
           programa: ["TDL", "Faltan Varones"],
           rol: "Invitado / Conductor",
           canta: "No",
-          canalAnterior: "Influencer",
+          canalAnterior: "IG/TikTok",
           nacio: "1997",
         },
         {
@@ -663,6 +663,10 @@ export default {
 </script>
 
 <style>
+/* =====================
+   ESTILOS BASE (DESKTOP FIRST)
+   ===================== */
+
 .loader-container {
   display: flex;
   flex-direction: column;
@@ -670,7 +674,6 @@ export default {
   justify-content: center;
   margin-top: 16px;
   color: white;
-  /* ajustá según tu fondo */
 }
 
 .spinner {
@@ -678,7 +681,6 @@ export default {
   height: 40px;
   border: 4px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
-  /* color principal */
   border-radius: 50%;
   animation: girar 1s linear infinite;
   margin-bottom: 8px;
@@ -704,12 +706,13 @@ export default {
   margin: auto;
 }
 
-.slide-enter-active {
+/* Animaciones de slide */
+.slide-enter-active,
+.slide-leave-active {
   transition: all 0.5s ease;
 }
 
 .slide-leave-active {
-  transition: all 0.5s ease;
   position: absolute;
 }
 
@@ -733,23 +736,21 @@ export default {
   transform: translateX(100%);
 }
 
+/* Scroll personalizado */
 .barra-nav::-webkit-scrollbar {
   width: 30px;
 }
 
 .barra-nav::-webkit-scrollbar-thumb {
   background-color: rgba(255, 61, 61, 0.9);
-  /* Color de la barra */
 }
 
 .barra-nav::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 61, 61, 1);
-  /* Color al pasar el cursor */
 }
 
 .barra-nav::-webkit-scrollbar-track {
   background-color: rgba(255, 61, 61, 0.3);
-  /* Color del track */
 }
 
 .inset-shadow {
@@ -787,10 +788,7 @@ export default {
   height: 150px;
 }
 
-.list-group {
-  border-radius: 0;
-}
-
+.list-group,
 .form-control {
   border-radius: 0;
 }
@@ -811,6 +809,7 @@ export default {
   background-color: rgb(255, 47, 47) !important;
 }
 
+/* Fondo principal */
 .fondo-img {
   position: fixed;
   z-index: -1;
@@ -818,7 +817,6 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  /* Degradado + imagen de fondo */
   background-image:
     linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
     url('/bg.jpg');
@@ -827,12 +825,11 @@ export default {
   background-repeat: no-repeat;
 }
 
+/* Modal */
 .fondoModal {
   position: fixed;
   inset: 0;
-  /* top:0, right:0, bottom:0, left:0 */
   background: rgba(0, 0, 0, 0.6);
-  /* gris/negro translúcido */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -869,7 +866,6 @@ export default {
   margin: 0 auto;
   padding: 10px 20px;
   background: #007bff;
-  /* azul lindo */
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -882,7 +878,6 @@ export default {
   background: #0056b3;
 }
 
-/* Animación de entrada */
 @keyframes aparecer {
   from {
     opacity: 0;
@@ -899,8 +894,9 @@ img {
   object-fit: cover;
 }
 
+/* Tablas/columnas */
 .col-width {
-  width: 100px !important;
+  width: 100px;
   position: relative;
 }
 
@@ -911,7 +907,7 @@ img {
   left: 0;
   border-bottom: white 3px solid;
   content: '';
-  width: 90%;
+  width: calc(100% - 10px);
   margin: 0 5px;
 }
 
@@ -929,20 +925,18 @@ body {
 }
 
 .list-group-item {
-
   border: none;
-  padding: 10px;
+  padding: 0;
 }
 
 .w-744 {
-  width: calc(744px);
+  width: 744px;
 }
 
 .bg-none {
   background: none;
 }
 
-/* Imagen cuadrada */
 .img-square {
   width: 60px;
   height: 60px;
@@ -950,7 +944,7 @@ body {
 }
 
 .square {
-  width: 100px !important;
+  width: 100px;
   height: 100px;
   align-content: center;
   text-align: center;
@@ -962,7 +956,6 @@ body {
   padding: 0 5px;
 }
 
-/* Centrado de texto dentro de las columnas */
 .list-group-item .col {
   display: flex;
   justify-content: center;
@@ -990,5 +983,230 @@ body {
 
 .bg-warning {
   box-shadow: inset 0 0 6px #000;
+}
+
+
+
+/* =====================
+   MEDIA QUERIES (DESKTOP → MOBILE)
+   ===================== */
+
+/* Tablets (≤ 992px) */
+@media (max-width: 992px) {
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: 960px;
+  }
+
+  .w-744 {
+    width: 744px;
+  }
+
+  .col-width {
+    width: 100px;
+  }
+
+  .square {
+    width: 100px;
+    height: 100px;
+    font-size: 16px;
+  }
+}
+
+/* Pantallas medianas (≤ 768px) */
+@media (max-width: 768px) {
+  .w-744 {
+    width: fit-content;
+  }
+
+  .square {
+    width: 85px;
+    height: 85px;
+    font-size: 14px;
+  }
+
+  .col-width {
+    font-size: 14px;
+    width: 85px;
+  }
+
+  .p-1 {
+    padding: 0;
+  }
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: fit-content;
+    padding: 0;
+    margin: auto;
+  }
+}
+
+/* Teléfonos grandes (≤ 635px) */
+@media (max-width: 635px) {
+  .w-744 {
+    width: fit-content;
+  }
+
+  .col-width {
+    width: 70px;
+    font-size: 12px;
+  }
+
+  .square {
+    width: 70px;
+    height: 70px;
+    font-size: 11px;
+  }
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: fit-content;
+    padding: 0;
+    margin: auto;
+  }
+}
+
+/* Teléfonos grandes (≤ 520px) */
+@media (max-width: 520px) {
+  .adivina-container {
+    font-size: 15px;
+  }
+
+  .w-744 {
+    width: fit-content;
+  }
+
+  .col-width {
+    width: 65px;
+    font-size: 11px;
+  }
+
+  .square {
+    width: 65px;
+    height: 65px;
+    font-size: 10px;
+  }
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: fit-content;
+    padding: 0;
+    margin: auto;
+  }
+}
+
+/* Teléfonos grandes (≤ 480px) */
+@media (max-width: 480px) {
+  .logo {
+    height: 100px;
+    width: 100px;
+  }
+
+  .adivina-container {
+    font-size: 15px;
+  }
+
+  .w-744 {
+    width: fit-content;
+  }
+
+  .col-width {
+    width: 50px;
+    font-size: 9px;
+    padding: 0 !important;
+  }
+
+
+
+  .square {
+    width: 50px;
+    height: 50px;
+    font-size: 9px;
+    padding: 0 !important;
+  }
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: fit-content;
+    padding: 0;
+    margin: auto;
+  }
+
+
+}
+
+/* Teléfonos grandes (≤ 380px) */
+@media (max-width: 380px) {
+  .adivina-container {
+    padding: 5px 10px;
+  }
+
+  #historialContainer {
+    width: 100svw;
+    overflow: auto;
+  }
+
+  /* Scroll personalizado */
+  #historialContainer::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  #historialContainer::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 61, 61, 0.9);
+  }
+
+  #historialContainer::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 61, 61, 1);
+  }
+
+  #historialContainer::-webkit-scrollbar-track {
+    background-color: rgba(255, 61, 61, 0.3);
+  }
+
+  .adivina-container {
+    font-size: 15px;
+  }
+
+  .w-744 {
+    width: fit-content;
+  }
+
+  .col-width {
+    width: 50px;
+    font-size: 9px;
+    padding: 0 !important;
+  }
+
+
+
+  .square {
+    width: 50px;
+    height: 50px;
+    font-size: 9px;
+    padding: 0 !important;
+  }
+
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: fit-content;
+    padding: 0;
+    margin: auto;
+  }
+
+
 }
 </style>
