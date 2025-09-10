@@ -32,7 +32,7 @@ function verificarIntegrante(totalIntegrantes) {
 
 // Endpoint
 app.get("/integrante", (req, res) => {
-    const totalIntegrantes = 32; // ⚠️ Cambiá este valor según la cantidad en tu front
+    const totalIntegrantes = 54; // ⚠️ Cambiá este valor según la cantidad en tu front
 
     verificarIntegrante(totalIntegrantes);
 
@@ -50,7 +50,7 @@ app.get("/integrante", (req, res) => {
 
 
 app.post("/intento", (req, res) => {
-    const intento = req.body.intento;  // viene del body
+    const intento = req.body.intento; // viene del body
     intentosTotales++;
     if (intento == 1) {
         aciertos++;

@@ -1,24 +1,3 @@
-productores: {
-    >juliduyos
-    >goni nenna
-    >lulasalomone
-    >flor rancatti
-    >paula gornitz
-    >sebi schurman
-    >juan ferrari
-    >lauti kermen    
-    titi
-    chona
-    atahualpa
-}
-
-tecnicos: {
-    >toro
-    >nico etevenaux
-    >agus botto
-    >ramiro ruffini
-    >diego vallejos
-}
 
         {
           img: "sofi.jpg",
@@ -59,16 +38,6 @@ tecnicos: {
           canta: "No",
           hizo: "Producción",
           nacio: "2000",
-        },
-        {
-          img: "rancatti.jpg",
-          nombre: "Flor Rancatti",
-          genero: "Femenino",
-          programa: ["Varios"],
-          rol: "Productor",
-          canta: "No",
-          hizo: "Marketing",
-          nacio: "No sé",
         },
         {
           img: "paugornitz.jpg",
@@ -112,12 +81,12 @@ tecnicos: {
         },
         {
           img: "toro.jpg",
-          nombre: "Toro",
+          nombre: "Toro Allera",
           genero: "Masculino",
           programa: ["Varios"],
           rol: "Técnico",
           canta: "No",
-          hizo: "Músico",
+          hizo: "Música",
           nacio: "1985",
         },
         {
@@ -174,8 +143,8 @@ tecnicos: {
         
         {
           img: "chona.jpg",
-          nombre: "Titi",
-          genero: "Femenino",
+          nombre: "Nacho Noviski",
+          genero: "Masculino",
           programa: ["Varios"],
           rol: "Productor",
           canta: "No",
@@ -183,12 +152,62 @@ tecnicos: {
           nacio: "No sé",
         },
         {
-          img: "titi.jpg",
-          nombre: "Titi",
-          genero: "Femenino",
+          img: "atahualpa.jpg",
+          nombre: "Atahualpa Cáceres",
+          genero: "Masculino",
           programa: ["Varios"],
           rol: "Productor",
           canta: "No",
           hizo: "Periodismo",
+          nacio: "No sé",
+        },
+        {
+          img: "agusnucera.jpg",
+          nombre: "Agustina Nucera",
+          genero: "Femenino",
+          programa: ["EFDM"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Infobae",
+          nacio: "No sé",
+        },
+        {
+          img: "nicogeuna.jpg",
+          nombre: "Nicolás Geuna",
+          genero: "Masculino",
+          programa: ["Paraíso Fiscal"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Urbana Play",
+          nacio: "No sé",
+        },
+        {
+          img: "zorrito.jpg",
+          nombre: "Zorrito Aguerre",
+          genero: "Masculino",
+          programa: ["SQV"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "ESPN",
+          nacio: "No sé",
+        },
+        {
+          img: "manu.jpg",
+          nombre: "Manu Amabile",
+          genero: "Masculino",
+          programa: ["Varios"],
+          rol: "Técnico",
+          canta: "No",
+          hizo: "Multimedia",
+          nacio: "No sé",
+        },
+        {
+          img: "guadapompei.jpg",
+          nombre: "Guada Pompei",
+          genero: "Femenino",
+          programa: ["TDT"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "CM",
           nacio: "No sé",
         },
