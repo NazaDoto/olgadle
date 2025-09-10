@@ -12,7 +12,7 @@
   <div v-if="modalFin && textoModal === 'GANASTE!!!'" class="fondoModal" @click="modalFin = false">
     <div class="containerModal" @click.stop>
       <div class="headerModal">🎉 ¡Ganaste!</div>
-      <div class="bodyModal">Lo lograste en {{ 5 - intentos }}/5 intentos</div>
+      <div class="bodyModal">Lo lograste en {{ 7 - intentos }}/7 intentos</div>
       <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
       <p class="bodyModal" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -675,7 +675,7 @@ export default {
         },
       ]
       , integranteOculto: null,
-      intentos: localStorage.getItem('intentos') || 5,
+      intentos: localStorage.getItem('intentos') || 7,
       intento: "",
       intentosTotales: 0,
       aciertos: 0,
@@ -720,7 +720,7 @@ export default {
       let resultado = `Olgadle del día ${new Date().toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit'
-      })} en ${(5 - this.intentos)}/5 intentos\n`;
+      })} en ${(7 - this.intentos)}/7 intentos\n`;
 
       this.historial.forEach((item) => {
         let fila = "";
