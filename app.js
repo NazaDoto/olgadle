@@ -50,7 +50,7 @@ app.get('/intentos', (req, res) => {
     });
 })
 app.post("/intento", (req, res) => {
-    const intento = req.params.intento;
+    const intento = req.body.intento;
     intentosTotales++;
     if (intento == 1) {
         aciertos++;
