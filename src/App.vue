@@ -786,6 +786,7 @@ export default {
       setTimeout(async () => {
         this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...';
         this.$refs.inputIntegrante.disabled = false;
+        this.$refs.inputIntegrante.focus();
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
