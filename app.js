@@ -41,21 +41,20 @@ app.get("/integrante", (req, res) => {
     res.json({
         integrante: integranteIndex, // el front usa este número como índice
         tiempoRestante: Math.floor(tiempoRestante / 1000), // en segundos
-    });
-});
-app.get('/intentos', (req, res) => {
-    res.json({
         intentosTotales: intentosTotales,
         aciertos: aciertos,
     });
-})
+});
+
+
 app.post("/intento", (req, res) => {
-    const intento = req.body.intento;
+    const intento = req.body.intento;  // viene del body
     intentosTotales++;
     if (intento == 1) {
         aciertos++;
     }
-})
+    res.json({ intentosTotales, aciertos });
+});
 
 // HTTPS credentials (Certbot)
 const httpsOptions = {

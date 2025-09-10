@@ -51,7 +51,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-          }}</h2>
+        }}</h2>
         <span v-if="terminado != -1">
           <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
 
@@ -582,31 +582,26 @@ export default {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
           localStorage.setItem('terminado', this.terminado);
-          try {
-            await axios.post('/intento', { intento: 1 });
-          } catch (error) {
-            console.log(error)
-          }
+          this.postIntento(1);
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
           this.terminado = -1;
           this.intentosTotales++;
           localStorage.setItem('terminado', this.terminado);
-          try {
-            await axios.post('/intento', { intento: 0 });
-            this.getIntentos();
-
-          } catch (error) {
-            console.log(error)
-          }
+          this.postIntento(0);
         }
       }, atributos.length * 600);
     },
-    async getIntentos() {
-      const response = await axios.get('/intentos');
-      console.log(response)
-      this.intentosTotales = response.data.intentosTotales;
-      this.aciertos = response.data.aciertos;
+    async postIntento(valor) {
+      try {
+        const response = await axios.post('/intento', { intento: valor });
+        console.log(response)
+        this.intentosTotales = response.data.intentosTotales;
+        this.aciertos = response.data.aciertos;
+
+      } catch (error) {
+        console.log(error)
+      }
     },
     revelarAtributosSinIntento(item) {
       const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
