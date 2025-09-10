@@ -49,6 +49,7 @@ app.get("/integrante", (req, res) => {
 
 app.post("/intento", (req, res) => {
     const intento = req.body.intento;  // viene del body
+    console.log(req.body)
     intentosTotales++;
     if (intento == 1) {
         aciertos++;

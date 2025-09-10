@@ -51,7 +51,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-        }}</h2>
+          }}</h2>
         <span v-if="terminado != -1">
           <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
 
@@ -559,7 +559,6 @@ export default {
           location.reload();
         }
         localStorage.setItem('integranteOculto', response.data.integrante);
-        this.getIntentos();
       } catch (error) {
         console.log('error' + error);
       } finally {
