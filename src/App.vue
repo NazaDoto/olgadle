@@ -51,8 +51,8 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-          }}</h2>
-        <span v-if="intentos != 0">
+        }}</h2>
+        <span v-if="terminado != -1">
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
         </span>
@@ -99,8 +99,16 @@
               {{ item.canalAnterior }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'nacio')" v-show="item.mostrar.nacio">
-              {{ item.nacio }}
+            <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
+              v-show="item.mostrar.nacio">
+              <!-- Flechita arriba -->
+              <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">▲</span>
+
+              <!-- Año de nacimiento -->
+              <div class="nacio-text">{{ item.nacio }}</div>
+
+              <!-- Flechita abajo -->
+              <span v-if="item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">▼</span>
             </div>
 
           </li>
@@ -465,32 +473,32 @@ export default {
 
   computed: {
     opcionesFiltradas() {
-  if (!this.intento) {
-    return this.integrantes;
-  }
-
-  const nombresHistorial = this.historial.map(i => i.nombre);
-  const input = this.intento.toLowerCase();
-
-  return this.integrantes
-    .filter(i => !nombresHistorial.includes(i.nombre))
-    .filter(i => i.nombre.toLowerCase().includes(input))
-    .sort((a, b) => {
-      const nombreA = a.nombre.toLowerCase();
-      const nombreB = b.nombre.toLowerCase();
-
-      // Contar coincidencias de letras en orden
-      const countMatches = (nombre) => {
-        let count = 0;
-        for (let i = 0; i < input.length; i++) {
-          if (nombre[i] === input[i]) count++;
-        }
-        return count;
+      if (!this.intento) {
+        return this.integrantes;
       }
 
-      return countMatches(nombreB) - countMatches(nombreA); // descendente
-    });
-}
+      const nombresHistorial = this.historial.map(i => i.nombre);
+      const input = this.intento.toLowerCase();
+
+      return this.integrantes
+        .filter(i => !nombresHistorial.includes(i.nombre))
+        .filter(i => i.nombre.toLowerCase().includes(input))
+        .sort((a, b) => {
+          const nombreA = a.nombre.toLowerCase();
+          const nombreB = b.nombre.toLowerCase();
+
+          // Contar coincidencias de letras en orden
+          const countMatches = (nombre) => {
+            let count = 0;
+            for (let i = 0; i < input.length; i++) {
+              if (nombre[i] === input[i]) count++;
+            }
+            return count;
+          }
+
+          return countMatches(nombreB) - countMatches(nombreA); // descendente
+        });
+    }
   },
 
   methods: {
@@ -546,7 +554,7 @@ export default {
         }
         localStorage.setItem('integranteOculto', response.data.integrante);
       } catch (error) {
-        console.log('error'+ error);
+        console.log('error' + error);
       } finally {
         this.cargando = false;
       }
@@ -678,7 +686,7 @@ export default {
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
     this.fetchIntegrante();
-    if (this.historial.length > 0 ){
+    if (this.historial.length > 0) {
       this.historial.forEach((item) => {
         // Asegurarse de que todos los atributos estén visibles
         this.revelarAtributos(item);
@@ -698,6 +706,36 @@ export default {
 /* =====================
    ESTILOS BASE (DESKTOP FIRST)
    ===================== */
+.nacio-box {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  /* organiza arriba → centro → abajo */
+  justify-content: center;
+  align-items: center;
+}
+
+.flecha {
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+  line-height: 1;
+}
+
+.flecha-arriba {
+  position: absolute;
+  top: 50%;
+  transform: translateY(calc(-50% - 20px));
+  color: white;
+}
+
+.flecha-abajo {
+  position: absolute;
+  top: 50%;
+  transform: translateY(calc(-50% + 20px));
+  color: white;
+}
+
 
 .loader-container {
   display: flex;
@@ -955,9 +993,11 @@ body {
 .text-sm {
   font-size: 0.875rem;
 }
-.list-group{
-  gap:1px;
+
+.list-group {
+  gap: 1px;
 }
+
 .list-group-item {
   border: none;
   padding: 0;
@@ -1083,6 +1123,18 @@ body {
 
 /* Teléfonos grandes (≤ 635px) */
 @media (max-width: 635px) {
+  .flecha {
+    font-size: 11px;
+  }
+
+  .flecha-abajo {
+    transform: translateY(calc(-50% + 12px));
+  }
+
+  .flecha-arriba {
+    transform: translateY(calc(-50% - 12px));
+  }
+
   .w-744 {
     width: fit-content;
   }
