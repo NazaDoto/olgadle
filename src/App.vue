@@ -51,7 +51,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-        }}</h2>
+          }}</h2>
         <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
         <span v-if="terminado != -1">
 
@@ -96,9 +96,8 @@
               {{ item.canta }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'canalAnterior')"
-              v-show="item.mostrar.canalAnterior">
-              {{ item.canalAnterior }}
+            <div class="square padding-text" :class="atributoColor(item, 'hizo')" v-show="item.mostrar.hizo">
+              {{ item.hizo }}
             </div>
 
             <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
@@ -141,7 +140,7 @@ export default {
           programa: ["GOLGANA"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "TyC Sports",
+          hizo: "TyC Sports",
           nacio: "1979",
         },
         {
@@ -151,7 +150,7 @@ export default {
           programa: ["SQV"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Actuación",
+          hizo: "Actuación",
           nacio: "1984",
         },
         {
@@ -161,7 +160,7 @@ export default {
           programa: ["Sería Increíble"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Telefe",
+          hizo: "Telefe",
           nacio: "1982",
         },
         {
@@ -171,7 +170,7 @@ export default {
           programa: ["TDT"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Streams",
+          hizo: "Streams",
           nacio: "2003",
         },
         {
@@ -181,7 +180,7 @@ export default {
           programa: ["Varios"],
           rol: "Invitado",
           canta: "Sí",
-          canalAnterior: "Telefe",
+          hizo: "Telefe",
           nacio: "1983",
         },
         {
@@ -191,7 +190,7 @@ export default {
           programa: ["GOLGANA"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Streams",
+          hizo: "Streams",
           nacio: "1997",
         },
         {
@@ -201,7 +200,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Periodismo",
+          hizo: "Periodismo",
           nacio: "1984",
         },
         {
@@ -211,7 +210,7 @@ export default {
           programa: ["Sería Increíble", "Faltan Varones"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "IG/TikTok",
+          hizo: "IG/TikTok",
           nacio: "1991",
         },
         {
@@ -221,7 +220,7 @@ export default {
           programa: ["GOLGANA"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "TyC Sports",
+          hizo: "TyC Sports",
           nacio: "1995",
         },
         {
@@ -231,7 +230,7 @@ export default {
           programa: ["TDL", "Mi Primo Es Así"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Urbana Play",
+          hizo: "Urbana Play",
           nacio: "1992",
         },
         {
@@ -241,7 +240,7 @@ export default {
           programa: ["SQV", "EFDM"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Blender",
+          hizo: "Blender",
           nacio: "1998",
         },
         {
@@ -251,7 +250,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Actuación",
+          hizo: "Actuación",
           nacio: "1990",
         },
         {
@@ -261,7 +260,7 @@ export default {
           programa: ["EFDM"],
           rol: "Columnista",
           canta: "No",
-          canalAnterior: "IG/TikTok",
+          hizo: "IG/TikTok",
           nacio: "1987",
         },
         {
@@ -271,7 +270,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Periodismo",
+          hizo: "Periodismo",
           nacio: "1977",
         },
         {
@@ -281,7 +280,7 @@ export default {
           programa: ["TDT"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Luzu TV",
+          hizo: "Luzu TV",
           nacio: "2001",
         },
         {
@@ -291,7 +290,7 @@ export default {
           programa: ["Sería Increíble", "Faltan Varones"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Rock & Pop",
+          hizo: "Rock & Pop",
           nacio: "1987",
         },
         {
@@ -301,7 +300,7 @@ export default {
           programa: ["EFDM"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Pop Radio",
+          hizo: "Pop Radio",
           nacio: "1970",
         },
         {
@@ -311,7 +310,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Youtube",
+          hizo: "Youtube",
           nacio: "2003",
         },
         {
@@ -321,7 +320,7 @@ export default {
           programa: ["SQV"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Vorterix",
+          hizo: "Vorterix",
           nacio: "1987",
         },
         {
@@ -331,7 +330,7 @@ export default {
           programa: ["SQV", "TDT"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Luzu TV",
+          hizo: "Luzu TV",
           nacio: "2000",
         },
         {
@@ -341,7 +340,7 @@ export default {
           programa: ["Mi Primo Es Así"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Actuación",
+          hizo: "Actuación",
           nacio: "1987",
         },
         {
@@ -351,7 +350,7 @@ export default {
           programa: ["SQV"],
           rol: "Conductor",
           canta: "Sí",
-          canalAnterior: "Vorterix",
+          hizo: "Vorterix",
           nacio: "1986",
         },
         {
@@ -361,7 +360,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Streams",
+          hizo: "Streams",
           nacio: "2002",
         },
         {
@@ -371,7 +370,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Luzu TV",
+          hizo: "Luzu TV",
           nacio: "1988",
         },
         {
@@ -381,7 +380,7 @@ export default {
           programa: ["Sería Increíble"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Luzu TV",
+          hizo: "Luzu TV",
           nacio: "1994",
         },
         {
@@ -391,7 +390,7 @@ export default {
           programa: ["TDT"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Luzu TV",
+          hizo: "Luzu TV",
           nacio: "2000",
         },
         {
@@ -401,7 +400,7 @@ export default {
           programa: ["TDL"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Telefe",
+          hizo: "Telefe",
           nacio: "1984",
         },
         {
@@ -411,7 +410,7 @@ export default {
           programa: ["TDL", "Faltan Varones"],
           rol: "Invitado / Conductor",
           canta: "No",
-          canalAnterior: "IG/TikTok",
+          hizo: "IG/TikTok",
           nacio: "1997",
         },
         {
@@ -421,7 +420,7 @@ export default {
           programa: ["GOLGANA", "Faltan Varones"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Actuación",
+          hizo: "Actuación",
           nacio: "1979",
         },
         {
@@ -431,7 +430,7 @@ export default {
           programa: ["GOLGANA"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Infobae",
+          hizo: "Infobae",
           nacio: "1983",
         },
         {
@@ -441,7 +440,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Telefe",
+          hizo: "Telefe",
           nacio: "1983",
         },
         {
@@ -451,7 +450,7 @@ export default {
           programa: ["Paraíso Fiscal"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Metro 98.7",
+          hizo: "Metro 98.7",
           nacio: "1983",
         },
         {
@@ -461,7 +460,7 @@ export default {
           programa: ["Mi Primo Es Así", "EFDM"],
           rol: "Conductor",
           canta: "No",
-          canalAnterior: "Actuación",
+          hizo: "Actuación",
           nacio: "1998",
         }
       ]
@@ -517,7 +516,7 @@ export default {
         let fila = "";
 
         // Recorremos atributos importantes
-        const atributos = ["genero", "programa", "rol", "canta", "canalAnterior", "nacio"];
+        const atributos = ["genero", "programa", "rol", "canta", "hizo", "nacio"];
         atributos.forEach((attr) => {
           const valorOculto = this.integranteOculto[attr];
 
@@ -566,7 +565,7 @@ export default {
       }
     },
     revelarAtributos(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio'];
 
 
       atributos.forEach((attr, index) => {
@@ -603,7 +602,7 @@ export default {
       }
     },
     revelarAtributosSinIntento(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio'];
 
 
       atributos.forEach((attr, index) => {
@@ -658,7 +657,7 @@ export default {
           genero: false,
           rol: false,
           canta: false,
-          canalAnterior: false,
+          hizo: false,
           programa: false,
           nacio: false,
         }

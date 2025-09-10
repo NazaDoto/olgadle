@@ -1,0 +1,194 @@
+productores: {
+    >juliduyos
+    >goni nenna
+    >lulasalomone
+    >flor rancatti
+    >paula gornitz
+    >sebi schurman
+    >juan ferrari
+    >lauti kermen    
+    titi
+    chona
+    atahualpa
+}
+
+tecnicos: {
+    >toro
+    >nico etevenaux
+    >agus botto
+    >ramiro ruffini
+    >diego vallejos
+}
+
+        {
+          img: "sofi.jpg",
+          nombre: "Sofi Morandi",
+          genero: "Femenino",
+          programa: ["SQV"],
+          rol: "Conductor",
+          canta: "Si",
+          hizo: "Actuación",
+          nacio: "1997",
+        },
+        {
+          img: "juliduyos.jpg",
+          nombre: "Juli Duyos",
+          genero: "Femenino",
+          programa: ["Mi Primo Es Así", "TDL"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Metro 95.1",
+          nacio: "1991",
+        },
+        {
+          img: "goni.jpg",
+          nombre: "Goni Nenna",
+          genero: "Masculino",
+          programa: ["SQV"],
+          rol: "Invitado",
+          canta: "Si",
+          hizo: "Producción",
+          nacio: "1996",
+        },
+        {
+          img: "lula.jpg",
+          nombre: "Lula Salomone",
+          genero: "Femenino",
+          programa: ["SQV", "Faltan Varones"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Producción",
+          nacio: "2000",
+        },
+        {
+          img: "rancatti.jpg",
+          nombre: "Flor Rancatti",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Marketing",
+          nacio: "No sé",
+        },
+        {
+          img: "paugornitz.jpg",
+          nombre: "Paula Gornitz",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Futurock",
+          nacio: "2000",
+        },
+        {
+          img: "sebi.jpg",
+          nombre: "Sebi Schurman",
+          genero: "Masculino",
+          programa: ["Sería Increíble"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Corta",
+          nacio: "No sé",
+        },
+        {
+          img: "juanferrari.jpg",
+          nombre: "Juan Ferrari",
+          genero: "Masculino",
+          programa: ["Sería Increíble"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Urbana Play",
+          nacio: "No sé",
+        },
+        {
+          img: "lauti.jpg",
+          nombre: "Lautaro Kermen",
+          genero: "Masculino",
+          programa: ["Mi Primo Es Así", "TDL"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Producción",
+          nacio: "1994",
+        },
+        {
+          img: "toro.jpg",
+          nombre: "Toro",
+          genero: "Masculino",
+          programa: ["Varios"],
+          rol: "Técnico",
+          canta: "No",
+          hizo: "Músico",
+          nacio: "1985",
+        },
+        {
+          img: "etevenaux.jpg",
+          nombre: "Nicolás Etevenaux",
+          genero: "Masculino",
+          programa: ["Varios"],
+          rol: "Técnico",
+          canta: "Si",
+          hizo: "Vorterix",
+          nacio: "No sé",
+        },
+        {
+          img: "agusbotto.jpg",
+          nombre: "Agustina Botto",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Técnico",
+          canta: "No",
+          hizo: "Futurock",
+          nacio: "No sé",
+        },
+        {
+          img: "rami.jpg",
+          nombre: "Ramiro Ruffini",
+          genero: "Masculino",
+          programa: ["SQV", "Mi Primo Es Así"],
+          rol: "Técnico",
+          canta: "No",
+          hizo: "Radio",
+          nacio: "No sé",
+        },
+        {
+          img: "diegui.jpg",
+          nombre: "Diego Vallejos",
+          genero: "Masculino",
+          programa: ["Paraíso Fiscal", "Sería Increíble"],
+          rol: "Técnico",
+          canta: "No",
+          hizo: "Futurock",
+          nacio: "No sé",
+        },
+        {
+          img: "titi.jpg",
+          nombre: "Titi",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Periodismo",
+          nacio: "No sé",
+        },
+
+        
+        {
+          img: "chona.jpg",
+          nombre: "Titi",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Periodismo",
+          nacio: "No sé",
+        },
+        {
+          img: "titi.jpg",
+          nombre: "Titi",
+          genero: "Femenino",
+          programa: ["Varios"],
+          rol: "Productor",
+          canta: "No",
+          hizo: "Periodismo",
+          nacio: "No sé",
+        },
