@@ -32,7 +32,7 @@ function verificarIntegrante(totalIntegrantes) {
 
 // Endpoint
 app.get("/integrante", (req, res) => {
-    const totalIntegrantes = 54; // ⚠️ Cambiá este valor según la cantidad en tu front
+    const totalIntegrantes = 53; // ⚠️ Cambiá este valor según la cantidad en tu front
 
     verificarIntegrante(totalIntegrantes);
 
