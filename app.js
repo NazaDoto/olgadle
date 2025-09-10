@@ -41,11 +41,14 @@ app.get("/integrante", (req, res) => {
     res.json({
         integrante: integranteIndex, // el front usa este número como índice
         tiempoRestante: Math.floor(tiempoRestante / 1000), // en segundos
+    });
+});
+app.get('/intentos', (req, res) => {
+    res.json({
         intentosTotales: intentosTotales,
         aciertos: aciertos,
     });
-});
-
+})
 app.post("/intento", (req, res) => {
     const intento = req.params.intento;
     intentosTotales++;

@@ -51,7 +51,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-          }}</h2>
+        }}</h2>
         <span v-if="terminado != -1">
           <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
 
@@ -581,9 +581,14 @@ export default {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
           localStorage.setItem('terminado', this.terminado);
-          this.intentosTotales++;
-          this.aciertos++;
-          await axios.post('/intento', { intento: 1 });
+          try {
+            await axios.post('/intento', { intento: 1 });
+            const response = await axios.get('/intentos');
+            this.intentosTotales = response.data.intentosTotales;
+            this.aciertos = response.data.aciertos;
+          } catch (error) {
+            console.log(error)
+          }
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
           this.terminado = -1;
@@ -591,6 +596,9 @@ export default {
           localStorage.setItem('terminado', this.terminado);
           try {
             await axios.post('/intento', { intento: 0 });
+            const response = await axios.get('/intentos');
+            this.intentosTotales = response.data.intentosTotales;
+            this.aciertos = response.data.aciertos;
           } catch (error) {
             console.log(error)
           }
