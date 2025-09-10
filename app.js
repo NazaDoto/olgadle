@@ -4,6 +4,8 @@ import fs from "fs";
 import https from "https";
 
 const app = express();
+app.use(express.json());
+
 app.use(cors());
 
 // Variables para el integrante oculto y control de tiempo
@@ -49,7 +51,6 @@ app.get("/integrante", (req, res) => {
 
 app.post("/intento", (req, res) => {
     const intento = req.body.intento;  // viene del body
-    console.log(req.body)
     intentosTotales++;
     if (intento == 1) {
         aciertos++;
@@ -68,3 +69,7 @@ const PORT = process.env.PORT || 3501;
 https.createServer(httpsOptions, app).listen(PORT, () => {
     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
 });
+
+// app.listen(3501, () => {
+//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
+// });
