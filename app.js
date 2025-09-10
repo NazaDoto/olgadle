@@ -10,7 +10,8 @@ app.use(cors());
 let integranteIndex = null;
 let ultimaAsignacion = null;
 const INTERVALO_MS = 12 * 60 * 60 * 1000; // 24 horas
-
+let intentosTotales = 0;
+let aciertos = 0;
 // Función que asigna un nuevo integrante
 function asignarNuevoIntegrante(totalIntegrantes) {
     integranteIndex = Math.floor(Math.random() * totalIntegrantes);
@@ -22,6 +23,8 @@ function asignarNuevoIntegrante(totalIntegrantes) {
 function verificarIntegrante(totalIntegrantes) {
     if (!ultimaAsignacion || Date.now() - ultimaAsignacion >= INTERVALO_MS) {
         asignarNuevoIntegrante(totalIntegrantes);
+        intentosTotales = 0;
+        aciertos = 0;
     }
 }
 
@@ -38,8 +41,18 @@ app.get("/integrante", (req, res) => {
     res.json({
         integrante: integranteIndex, // el front usa este número como índice
         tiempoRestante: Math.floor(tiempoRestante / 1000), // en segundos
+        intentosTotales: intentosTotales,
+        aciertos: aciertos,
     });
 });
+
+app.post("/intento", (req, res) => {
+    const intento = req.params.intento;
+    intentosTotales++;
+    if (intento == 1) {
+        aciertos++;
+    }
+})
 
 // HTTPS credentials (Certbot)
 const httpsOptions = {

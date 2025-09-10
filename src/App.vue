@@ -51,8 +51,10 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-        }}</h2>
+          }}</h2>
         <span v-if="terminado != -1">
+          <p class="c-white">{{ 'Acertaron ' + aciertos + 'de ' + intentosTotales + 'personas.' }}</p>
+
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
         </span>
@@ -466,6 +468,8 @@ export default {
       , integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 5,
       intento: "",
+      intentosTotales: "",
+      aciertos: "",
       terminado: localStorage.getItem('terminado') || 0,
       mostrarOpciones: false
     };
@@ -547,6 +551,8 @@ export default {
       try {
         const response = await axios.get('/integrante');
         this.integranteOculto = this.integrantes[response.data.integrante];
+        this.intentosTotales = response.data.intentosTotales;
+        this.aciertos = response.data.aciertos;
         this.startTimer(response.data.tiempoRestante);
         if (localStorage.getItem('integranteOculto') && localStorage.getItem('integranteOculto') != response.data.integrante) {
           localStorage.clear();
@@ -568,16 +574,22 @@ export default {
           item.mostrar[attr] = true;
         }, index * 600);
       });
-      setTimeout(() => {
+      setTimeout(async () => {
         this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...';
         this.$refs.inputIntegrante.disabled = false;
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
+          await axios.post('/intento', { params: { intento: 1 } })
           localStorage.setItem('terminado', this.terminado);
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
           this.terminado = -1;
+          try {
+            await axios.post('/intento', { params: { intento: 0 } })
+          } catch (error) {
+            console.log(error)
+          }
           localStorage.setItem('terminado', this.terminado);
         }
       }, atributos.length * 600);
