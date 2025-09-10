@@ -9,7 +9,7 @@ app.use(cors());
 // Variables para el integrante oculto y control de tiempo
 let integranteIndex = null;
 let ultimaAsignacion = null;
-const INTERVALO_MS = 24 * 60 * 60 * 1000; // 24 horas
+const INTERVALO_MS = 12 * 60 * 60 * 1000; // 24 horas
 
 // Función que asigna un nuevo integrante
 function asignarNuevoIntegrante(totalIntegrantes) {
