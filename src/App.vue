@@ -53,7 +53,7 @@
           '¡Ganaste!'
           }}</h2>
         <span v-if="terminado != -1">
-          <p class="c-white">{{ 'Acertaron ' + aciertos + 'de ' + intentosTotales + 'personas.' }}</p>
+          <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
 
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
@@ -468,8 +468,8 @@ export default {
       , integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 5,
       intento: "",
-      intentosTotales: "",
-      aciertos: "",
+      intentosTotales: 0,
+      aciertos: 0,
       terminado: localStorage.getItem('terminado') || 0,
       mostrarOpciones: false
     };
@@ -580,19 +580,32 @@ export default {
         if (item.nombre == this.integranteOculto.nombre) {
           this.mostrarModal('GANASTE!!!');
           this.terminado = 1;
-          await axios.post('/intento', { params: { intento: 1 } })
           localStorage.setItem('terminado', this.terminado);
+          this.intentosTotales++;
+          this.aciertos++;
+          await axios.post('/intento', { intento: 1 });
         } else if (this.intentos == 0) {
           this.mostrarModal('Perdiste :(');
           this.terminado = -1;
+          this.intentosTotales++;
+          localStorage.setItem('terminado', this.terminado);
           try {
-            await axios.post('/intento', { params: { intento: 0 } })
+            await axios.post('/intento', { intento: 0 });
           } catch (error) {
             console.log(error)
           }
-          localStorage.setItem('terminado', this.terminado);
         }
       }, atributos.length * 600);
+    },
+    revelarAtributosSinIntento(item) {
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'canalAnterior', 'nacio'];
+
+
+      atributos.forEach((attr, index) => {
+        setTimeout(() => {
+          item.mostrar[attr] = true;
+        }, index * 600);
+      });
     },
     mostrarModal(texto) {
       this.modalFin = true;
@@ -701,7 +714,7 @@ export default {
     if (this.historial.length > 0) {
       this.historial.forEach((item) => {
         // Asegurarse de que todos los atributos estén visibles
-        this.revelarAtributos(item);
+        this.revelarAtributosSinIntento(item);
       });
     }
 
