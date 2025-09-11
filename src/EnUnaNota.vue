@@ -86,7 +86,6 @@
     </div>
 
     <!-- Audio oculto -->
-    {{ currentTrack }}
     <audio ref="audioPlayer" :src="`/api/track-proxy/${currentTrack?.id}`" type="audio/mpeg" hidden></audio>
   </div>
 </template>
