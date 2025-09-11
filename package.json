@@ -18,9 +18,9 @@
     "axios": "^1.11.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "fetch": "^1.1.0",
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
+    "node-fetch": "^3.3.2",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
   },
