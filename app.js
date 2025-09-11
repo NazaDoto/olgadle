@@ -18,7 +18,7 @@ let aciertos = 0;
 // Cache de playlist Deezer
 let playlistCache = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutos
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 
 async function fetchPlaylist(force = false) {
     try {

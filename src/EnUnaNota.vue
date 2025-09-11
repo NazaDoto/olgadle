@@ -201,7 +201,6 @@ export default {
 
     ,
     async playSegment() {
-      console.log('asd')
       if (!this.audioPlayer || !this.audioPlayer.src || this.currentSegment >= this.durations.length) return
       try {
         await this.audioPlayer.load(); // fuerza carga
