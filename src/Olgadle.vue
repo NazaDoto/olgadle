@@ -1,7 +1,12 @@
 <template>
   <div v-if="modalFin && textoModal === 'Perdiste :('" class="fondoModal" @click="modalFin = false">
-    <div class="containerModal">
+    <div class="containerModal" @click.stop>
       <div class="headerModal">{{ textoModal }}</div>
+      <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">Era {{ integranteOculto.nombre }}
+        <br>
+        <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
+          class="square mt-2">
+      </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
     </div>
@@ -50,7 +55,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-        }}</h2>
+          }}</h2>
         <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
         <span v-if="terminado != -1">
 
@@ -564,7 +569,7 @@ export default {
         },
         {
           img: "peter.jpg",
-          nombre: "Peter Alfonso",
+          nombre: "Pedro Alfonso",
           genero: "Masculino",
           programa: ["GOLGANA", "Faltan Varones"],
           rol: "Conductor",
@@ -931,7 +936,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 /* =====================
    ESTILOS BASE (DESKTOP FIRST)
    ===================== */

@@ -1,26 +1,88 @@
 <template>
   <div class="fondo-img"></div>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 text-white">
+  <div class="inicio-container" v-if="$route.path == '/'">
+    <div class="flex-col gap-4 mt-5">
+      <!-- Botón Olgadle -->
+      <router-link to="/olgadle" class="flex-row boton-container gap-2">
+        <img src="/logo.png" alt="Olgadle" class="img-boton" />
+        <div class="content-boton flex-col">
+          <h1 class="titulo-boton">OLGAdle</h1>
+          <span class="text-boton">Adiviná el integrante de OLGA con pistas.</span>
+        </div>
+      </router-link>
 
-        <!-- Botón Olgadle -->
-        <router-link to="/olgadle">
-          <img src="/logo.png" alt="Olgadle" class="img-boton" />
-        </router-link>
+      <!-- Botón En Una Nota -->
+      <router-link to="/en-una-nota" class="flex-row boton-container gap-2">
+        <img src="/enunanota.png" alt="En Una Nota" class="img-boton" />
+        <div class="content-boton flex-col">
+          <h1 class="titulo-boton">En una nota</h1>
+          <span class="text-boton">Adiviná la canción en pocos segundos.</span>
+        </div>
+      </router-link>
+      <!-- Vista dinámica -->
+    </div>
 
-        <!-- Botón En Una Nota -->
-        <router-link to="/en-una-nota">
-          <img src="/enunanota.png" alt="En Una Nota" class="img-boton" />
-        </router-link>
-    <!-- Vista dinámica -->
-    <router-view class="p-6" />
   </div>
+  <router-link v-else to="/" class="boton-container btn-volver">
+    <span class="text-boton">{{ '< ' }}Volver</span>
+  </router-link>
+  <router-view />
 </template>
 
 <script setup>
 // No necesitas lógica todavía
 </script>
 
-<style>
+<style scoped>
+.btn-volver {
+  position: sticky;
+  top: 5px;
+  left: 5px;
+}
+
+.boton-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px 5px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.boton-container:hover {
+  background-color: rgba(212, 212, 212, 0.8);
+}
+
+.inicio-container {
+  display: flex;
+  margin: auto;
+  max-width: calc(100svw - 10px);
+  height: 100svh;
+  justify-content: center;
+}
+
+.content-boton {
+  color: black;
+}
+
+.titulo-boton {
+  font-size: 2rem;
+}
+
+.text-boton {
+  font-size: 1.3rem;
+  color: black;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .fondo-img {
   position: fixed;
   z-index: -1;
@@ -35,8 +97,9 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+
 .img-boton {
   height: 100px;
-  width:100px;
+  width: 100px;
 }
 </style>

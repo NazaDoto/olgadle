@@ -14,6 +14,12 @@ let ultimaAsignacion = null;
 const INTERVALO_MS = 12 * 60 * 60 * 1000; // 24 horas
 let intentosTotales = 0;
 let aciertos = 0;
+
+
+const response = await fetch(`https://api.deezer.com/playlist/14297920541`)
+const data = await response.json()
+
+
 // Función que asigna un nuevo integrante
 function asignarNuevoIntegrante(totalIntegrantes) {
     integranteIndex = Math.floor(Math.random() * totalIntegrantes);
@@ -59,15 +65,26 @@ app.post("/intento", (req, res) => {
 });
 
 
+app.get("/api/playlist", async (req, res) => {
+    if (!data.tracks || !data.tracks.data) {
+        return res.status(404).json({ error: "No se encontraron canciones" });
+    }
+
+    // Devolver solo título y artista
+    const simplifiedTracks = data.tracks.data.map(track => ({
+        id: track.id,
+        title: track.title,
+        artist: track.artist.name
+    }));
+
+    res.json(simplifiedTracks);
+});
+
 
 // Endpoint para obtener un track aleatorio de una playlist
-app.get("/api/random-track/:playlistId", async(req, res) => {
-    const playlistId = req.params.playlistId
+app.get("/api/random-track", async (req, res) => {
 
     try {
-        const response = await fetch(`https://api.deezer.com/playlist/${playlistId}`)
-        const data = await response.json()
-
         if (!data.tracks || !data.tracks.data || data.tracks.data.length === 0) {
             return res.status(404).json({ error: "No se encontraron canciones en la playlist" })
         }
@@ -97,18 +114,18 @@ app.get("/api/random-track/:playlistId", async(req, res) => {
 
 
 
-// // HTTPS credentials (Certbot)
-// const httpsOptions = {
-//     key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
-//     cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
-// };
+// HTTPS credentials (Certbot)
+const httpsOptions = {
+    key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
+    cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
+};
 
-// // Iniciar servidor HTTPS
-// const PORT = process.env.PORT || 3501;
-// https.createServer(httpsOptions, app).listen(PORT, () => {
-//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
-// });
-
-app.listen(3501, () => {
-    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
+// Iniciar servidor HTTPS
+const PORT = process.env.PORT || 3501;
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
 });
+
+// app.listen(3501, () => {
+//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
+// });
