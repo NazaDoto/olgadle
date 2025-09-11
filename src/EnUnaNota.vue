@@ -86,8 +86,8 @@
     </div>
 
     <!-- Audio oculto -->
-    <audio v-if="currentTrack" ref="audioPlayer" :src="`/api/track-proxy/${currentTrack.id}`" type="audio/mpeg"
-      hidden></audio>
+    {{ currentTrack }}
+    <audio ref="audioPlayer" :src="`/api/track-proxy/${currentTrack?.id}`" type="audio/mpeg" hidden></audio>
   </div>
 </template>
 
@@ -202,8 +202,8 @@ export default {
 
     ,
     async playSegment() {
+      console.log('asd')
       if (!this.audioPlayer || !this.audioPlayer.src || this.currentSegment >= this.durations.length) return
-
       try {
         await this.audioPlayer.load(); // fuerza carga
         await this.audioPlayer.play();
