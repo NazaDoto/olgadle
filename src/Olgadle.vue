@@ -55,7 +55,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-          }}</h2>
+        }}</h2>
         <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
         <span v-if="terminado != -1">
 
@@ -562,7 +562,7 @@ export default {
           nombre: "Pelao Khe",
           genero: "Masculino",
           programa: ["TDL", "Faltan Varones"],
-          rol: "Invitado / Conductor",
+          rol: "Conductor",
           canta: "Sí",
           hizo: "IG/TikTok",
           nacio: "1997",
