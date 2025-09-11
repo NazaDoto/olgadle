@@ -112,6 +112,22 @@ app.get("/api/random-track", async (req, res) => {
     }
 })
 
+app.get("/api/track-proxy/:id", async (req, res) => {
+    try {
+        const track = data.tracks.data.find(t => t.id == req.params.id);
+        if (!track || !track.preview) return res.status(404).send("Track no encontrado");
+
+        const response = await fetch(track.preview); // backend request
+        if (!response.ok) throw new Error("Error al descargar el track");
+
+        const buffer = await response.arrayBuffer();
+        res.set("Content-Type", "audio/mpeg");
+        res.send(Buffer.from(buffer));
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al reproducir track");
+    }
+});
 
 
 // HTTPS credentials (Certbot)
