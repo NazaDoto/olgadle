@@ -86,7 +86,8 @@
     </div>
 
     <!-- Audio oculto -->
-    <audio ref="audioPlayer" :src="`/api/track-proxy/${currentTrack.id}`" type="audio/mpeg" hidden></audio>
+    <audio v-if="currentTrack" ref="audioPlayer" :src="`/api/track-proxy/${currentTrack.id}`" type="audio/mpeg"
+      hidden></audio>
   </div>
 </template>
 
