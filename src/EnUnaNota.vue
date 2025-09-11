@@ -158,8 +158,7 @@ export default {
       if (!this.playlist || this.playlist.length === 0) {
         try {
           const res = await axios.get("/api/playlist");
-          const data = await res.json(); // <-- convertir a JSON
-          this.playlist = data;          // <-- asignar al estado
+          this.playlist = res.data;          // <-- Axios ya parsea el JSON
           localStorage.setItem('playlist', JSON.stringify(this.playlist));
         } catch (error) {
           console.error("Error al cargar playlist:", error);
@@ -167,11 +166,12 @@ export default {
       }
     },
 
+
     async loadRandomTrack() {
       this.currentTrack = null;
       try {
         const res = await axios.get("/api/random-track")
-        const track = await res.json()
+        const track = await res.data()
         this.currentTrack = track
         this.currentSegment = 0
         this.gameOver = false
