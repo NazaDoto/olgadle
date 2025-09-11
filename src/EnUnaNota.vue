@@ -139,7 +139,7 @@ export default {
       // Dibujamos los bloques según aciertos
       let bloques = ""
       for (let i = 0; i < intentosTotales; i++) {
-        if (gano && i < intentosUsados + 1) {
+        if (gano && i < intentosUsados ) {
           bloques += "🟥" // intentos fallidos
         } else if (gano && i === intentosUsados + 1) {
           bloques += "🟩" // acierto
