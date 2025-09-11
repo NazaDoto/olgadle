@@ -58,18 +58,57 @@ app.post("/intento", (req, res) => {
     res.json({ intentosTotales, aciertos });
 });
 
-// HTTPS credentials (Certbot)
-const httpsOptions = {
-    key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
-    cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
-};
 
-// Iniciar servidor HTTPS
-const PORT = process.env.PORT || 3501;
-https.createServer(httpsOptions, app).listen(PORT, () => {
-    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
-});
 
-// app.listen(3501, () => {
-//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
+// Endpoint para obtener un track aleatorio de una playlist
+app.get("/api/random-track/:playlistId", async(req, res) => {
+    const playlistId = req.params.playlistId
+
+    try {
+        const response = await fetch(`https://api.deezer.com/playlist/${playlistId}`)
+        const data = await response.json()
+
+        if (!data.tracks || !data.tracks.data || data.tracks.data.length === 0) {
+            return res.status(404).json({ error: "No se encontraron canciones en la playlist" })
+        }
+
+        let randomTrack
+        do {
+            // Elegir índice aleatorio
+            const randomIndex = Math.floor(Math.random() * data.tracks.data.length)
+            randomTrack = data.tracks.data[randomIndex]
+        } while (!randomTrack.preview) // Repetir si no tiene preview
+
+        // Devolver solo la info necesaria
+        res.json({
+            id: randomTrack.id,
+            title: randomTrack.title,
+            artist: randomTrack.artist.name,
+            album: randomTrack.album.title,
+            preview: randomTrack.preview, // 🔑 el mp3 de 30 segundos
+            cover: randomTrack.album.cover_medium,
+        })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: "Error al obtener la playlist de Deezer" })
+    }
+})
+
+
+
+// // HTTPS credentials (Certbot)
+// const httpsOptions = {
+//     key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
+//     cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
+// };
+
+// // Iniciar servidor HTTPS
+// const PORT = process.env.PORT || 3501;
+// https.createServer(httpsOptions, app).listen(PORT, () => {
+//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
 // });
+
+app.listen(3501, () => {
+    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
+});
