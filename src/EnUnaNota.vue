@@ -86,7 +86,7 @@
     </div>
 
     <!-- Audio oculto -->
-    <audio ref="audioPlayer" :src="currentTrack?.preview" hidden></audio>
+    <audio ref="audioPlayer" :src="currentTrack?.preview" type="audio/mpeg" hidden></audio>
   </div>
 </template>
 
@@ -165,37 +165,57 @@ export default {
         }
       }
     },
-
-
     async loadRandomTrack() {
       this.currentTrack = null;
       try {
-        const res = await axios.get("/api/random-track")
-        const track = await res.data;
-        this.currentTrack = track
-        this.currentSegment = 0
-        this.gameOver = false
-        this.guess = ""
-        this.message = ""
-        this.progress = 0
-        if (this.audioPlayer) {
-          this.audioPlayer.pause()
-          this.audioPlayer.currentTime = 0
-          this.audioPlayer.volume = this.volume
+        const res = await axios.get("/api/random-track");
+        const track = res.data;
+
+        if (!track || !track.preview) {
+          console.error("Track inválido o sin preview");
+          return;
         }
+
+        this.currentTrack = track;
+        this.currentSegment = 0;
+        this.gameOver = false;
+        this.guess = "";
+        this.message = "";
+        this.progress = 0;
+
+        await this.$nextTick();
+
+        if (this.audioPlayer) {
+          // Descargar como blob
+          const response = await fetch(track.preview);
+          const blob = await response.blob();
+          this.audioPlayer.src = URL.createObjectURL(blob);
+          this.audioPlayer.volume = this.volume;
+          this.audioPlayer.currentTime = 0;
+        }
+
       } catch (error) {
-        console.error("Error cargando track:", error)
+        console.error("Error cargando track:", error);
       }
-    },
-    playSegment() {
-      if (!this.audioPlayer || this.currentSegment >= this.durations.length) return
+    }
+
+    ,
+    async playSegment() {
+      if (!this.audioPlayer || !this.audioPlayer.src || this.currentSegment >= this.durations.length) return
+
+      try {
+        await this.audioPlayer.load(); // fuerza carga
+        await this.audioPlayer.play();
+      } catch (err) {
+        console.error("No se pudo reproducir el audio:", err);
+        return;
+      }
 
       const duration = this.durations[this.currentSegment]
       const startTime = this.cumulativeDurations[this.currentSegment] - duration
       const endTime = this.cumulativeDurations[this.currentSegment]
 
       this.audioPlayer.currentTime = startTime
-      this.audioPlayer.play()
 
       clearInterval(this.interval)
       this.progress = startTime / this.totalDuration
@@ -210,7 +230,9 @@ export default {
           this.progress = endTime / this.totalDuration
         }
       }, 100)
-    },
+    }
+
+    ,
     nextSegment() {
       if (this.currentSegment < this.durations.length - 1) {
         this.currentSegment++
