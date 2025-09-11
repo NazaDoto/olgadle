@@ -171,7 +171,7 @@ export default {
       this.currentTrack = null;
       try {
         const res = await axios.get("/api/random-track")
-        const track = await res.data()
+        const track = await res.data;
         this.currentTrack = track
         this.currentSegment = 0
         this.gameOver = false
