@@ -3,31 +3,54 @@ import cors from "cors";
 import fs from "fs";
 import https from "https";
 import fetch from "node-fetch";
+
 const app = express();
 app.use(express.json());
-
 app.use(cors());
 
 // Variables para el integrante oculto y control de tiempo
 let integranteIndex = null;
 let ultimaAsignacion = null;
-const INTERVALO_MS = 12 * 60 * 60 * 1000; // 24 horas
+const INTERVALO_MS = 12 * 60 * 60 * 1000; // 12 horas
 let intentosTotales = 0;
 let aciertos = 0;
 
+// Cache de playlist Deezer
+let playlistCache = null;
+let lastFetchTime = 0;
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
 
-const response = await fetch(`https://api.deezer.com/playlist/14297920541`)
-const data = await response.json()
+async function fetchPlaylist(force = false) {
+    try {
+        if (!force && playlistCache && Date.now() - lastFetchTime < CACHE_TTL) {
+            return playlistCache;
+        }
 
+        console.log("🔄 Refrescando playlist desde Deezer...");
+        const response = await fetch(`https://api.deezer.com/playlist/14297920541`);
+        if (!response.ok) throw new Error("Error al pedir la playlist");
+        const data = await response.json();
 
-// Función que asigna un nuevo integrante
+        if (!data.tracks || !data.tracks.data) {
+            throw new Error("Playlist vacía");
+        }
+
+        playlistCache = data;
+        lastFetchTime = Date.now();
+        return data;
+    } catch (err) {
+        console.error("❌ Error en fetchPlaylist:", err.message);
+        return playlistCache; // devolver lo último válido
+    }
+}
+
+// Asignación de integrante
 function asignarNuevoIntegrante(totalIntegrantes) {
     integranteIndex = Math.floor(Math.random() * totalIntegrantes);
     ultimaAsignacion = Date.now();
     console.log("Nuevo integrante oculto:", integranteIndex);
 }
 
-// Middleware para comprobar si hay que renovar el integrante
 function verificarIntegrante(totalIntegrantes) {
     if (!ultimaAsignacion || Date.now() - ultimaAsignacion >= INTERVALO_MS) {
         asignarNuevoIntegrante(totalIntegrantes);
@@ -36,27 +59,24 @@ function verificarIntegrante(totalIntegrantes) {
     }
 }
 
-// Endpoint
+// Endpoint integrante
 app.get("/integrante", (req, res) => {
-    const totalIntegrantes = 53; // ⚠️ Cambiá este valor según la cantidad en tu front
-
+    const totalIntegrantes = 53;
     verificarIntegrante(totalIntegrantes);
 
-    // Calcular tiempo restante en segundos
-    const tiempoRestante =
-        INTERVALO_MS - (Date.now() - ultimaAsignacion);
+    const tiempoRestante = INTERVALO_MS - (Date.now() - ultimaAsignacion);
 
     res.json({
-        integrante: integranteIndex, // el front usa este número como índice
-        tiempoRestante: Math.floor(tiempoRestante / 1000), // en segundos
-        intentosTotales: intentosTotales,
-        aciertos: aciertos,
+        integrante: integranteIndex,
+        tiempoRestante: Math.floor(tiempoRestante / 1000),
+        intentosTotales,
+        aciertos,
     });
 });
 
-
+// Endpoint intento
 app.post("/intento", (req, res) => {
-    const intento = req.body.intento; // viene del body
+    const intento = req.body.intento;
     intentosTotales++;
     if (intento == 1) {
         aciertos++;
@@ -64,60 +84,58 @@ app.post("/intento", (req, res) => {
     res.json({ intentosTotales, aciertos });
 });
 
-
-app.get("/api/playlist", async (req, res) => {
-    if (!data.tracks || !data.tracks.data) {
+// Endpoint playlist simplificada
+app.get("/api/playlist", async(req, res) => {
+    const data = await fetchPlaylist();
+    if (!data || !data.tracks || !data.tracks.data) {
         return res.status(404).json({ error: "No se encontraron canciones" });
     }
 
-    // Devolver solo título y artista
     const simplifiedTracks = data.tracks.data.map(track => ({
         id: track.id,
         title: track.title,
-        artist: track.artist.name
+        artist: track.artist.name,
     }));
 
     res.json(simplifiedTracks);
 });
 
-
-// Endpoint para obtener un track aleatorio de una playlist
-app.get("/api/random-track", async (req, res) => {
-
+// Endpoint random-track
+app.get("/api/random-track", async(req, res) => {
+    const data = await fetchPlaylist();
     try {
-        if (!data.tracks || !data.tracks.data || data.tracks.data.length === 0) {
-            return res.status(404).json({ error: "No se encontraron canciones en la playlist" })
+        if (!data || !data.tracks || !data.tracks.data.length) {
+            return res.status(404).json({ error: "No se encontraron canciones" });
         }
 
-        let randomTrack
+        let randomTrack;
         do {
-            // Elegir índice aleatorio
-            const randomIndex = Math.floor(Math.random() * data.tracks.data.length)
-            randomTrack = data.tracks.data[randomIndex]
-        } while (!randomTrack.preview) // Repetir si no tiene preview
+            const randomIndex = Math.floor(Math.random() * data.tracks.data.length);
+            randomTrack = data.tracks.data[randomIndex];
+        } while (!randomTrack.preview);
 
-        // Devolver solo la info necesaria
         res.json({
             id: randomTrack.id,
             title: randomTrack.title,
             artist: randomTrack.artist.name,
             album: randomTrack.album.title,
-            preview: randomTrack.preview, // 🔑 el mp3 de 30 segundos
+            preview: randomTrack.preview,
             cover: randomTrack.album.cover_medium,
-        })
-
+        });
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: "Error al obtener la playlist de Deezer" })
+        console.error(error);
+        res.status(500).json({ error: "Error al obtener la playlist de Deezer" });
     }
-})
+});
 
-app.get("/api/track-proxy/:id", async (req, res) => {
+// Proxy de tracks
+app.get("/api/track-proxy/:id", async(req, res) => {
+    const data = await fetchPlaylist();
     try {
         const track = data.tracks.data.find(t => t.id == req.params.id);
         if (!track || !track.preview) return res.status(404).send("Track no encontrado");
 
-        const response = await fetch(track.preview); // backend request
+        const response = await fetch(track.preview);
         if (!response.ok) throw new Error("Error al descargar el track");
 
         const buffer = await response.arrayBuffer();
@@ -129,19 +147,16 @@ app.get("/api/track-proxy/:id", async (req, res) => {
     }
 });
 
-
-// HTTPS credentials (Certbot)
+// HTTPS
 const httpsOptions = {
-    key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
-    cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
+    key: fs.readFileSync("/var/www/ssl/nazadoto.com.key"),
+    cert: fs.readFileSync("/var/www/ssl/nazadoto.com.crt"),
 };
 
-// Iniciar servidor HTTPS
 const PORT = process.env.PORT || 3501;
 https.createServer(httpsOptions, app).listen(PORT, () => {
     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
 });
 
-// app.listen(3501, () => {
-//     console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:3501`);
-// });
+// Refrescar playlist cada 6 horas automáticamente
+setInterval(() => fetchPlaylist(true), CACHE_TTL);
