@@ -1,35 +1,9 @@
 # olgadle
 
-This template should help get you started developing with Vue 3 in Vite.
+Jugá a OLGADLE o EN UNA NOTA
 
-## Recommended IDE Setup
+¿Cómo se juega a Olgadle?
+- Elegí un integrante de OLGA (conductor, productor o técnica) y te mostrará una serie de pistas (verde = correcto, rojo = incorrecto, amarillo = tiene una coincidencia)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+¿Cómo se juega a EN UNA NOTA?
+- Escuchá fragmentos de una canción elegida aleatoriamente de la playlist de Tapados de Laburo (https://open.spotify.com/playlist/2kumFei7d5KRoI2fLFgu2G?si=6q55edvYSPW6YeWtWJKOAA&nd=1&dlsi=eb218ff031284d4f) e intentá adivinarla en el menor tiempo posible!
