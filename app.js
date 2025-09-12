@@ -3,6 +3,7 @@ import cors from "cors";
 import fs from "fs";
 import https from "https";
 import fetch from "node-fetch";
+import http from "http";
 
 const app = express();
 app.use(express.json());
@@ -15,10 +16,49 @@ const INTERVALO_MS = 12 * 60 * 60 * 1000; // 12 horas
 let intentosTotales = 0;
 let aciertos = 0;
 
+const INTERVALO_CANCION = 12 * 60 * 60 * 1000; // 12 horas
+let cancionActual = null;
+let ultimaCancion = null;
+let intentosTotalesEN = 0;
+let aciertosEN = 0;
+
+
 // Cache de playlist Deezer
 let playlistCache = null;
 let lastFetchTime = 0;
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutos
+
+// Elegir nueva canción con preview
+async function asignarNuevaCancion() {
+    const data = await fetchPlaylist(true);
+    if (!data || !data.tracks || !data.tracks.data.length) {
+        console.error("❌ No se pudo asignar nueva canción (playlist vacía)");
+        return;
+    }
+
+    let randomTrack;
+    let intentos = 0;
+    do {
+        const randomIndex = Math.floor(Math.random() * data.tracks.data.length);
+        randomTrack = data.tracks.data[randomIndex];
+        intentos++;
+    } while ((!randomTrack.preview) && intentos < 20);
+
+    if (randomTrack && randomTrack.preview) {
+        cancionActual = { id: randomTrack.id };
+        ultimaCancion = Date.now();
+        console.log("🎵 Nueva canción asignada:", randomTrack.title, "-", randomTrack.artist.name);
+    } else {
+        console.error("❌ No se encontró canción con preview válido después de 20 intentos");
+    }
+}
+
+function verificarCancion() {
+    if (!ultimaCancion || Date.now() - ultimaCancion >= INTERVALO_CANCION) {
+        return asignarNuevaCancion();
+    }
+}
+
 
 async function fetchPlaylist(force = false) {
     try {
@@ -83,9 +123,17 @@ app.post("/intento", (req, res) => {
     }
     res.json({ intentosTotales, aciertos });
 });
+app.post("/intentoEN", (req, res) => {
+    const intento = req.body.intento;
+    intentosTotalesEN++;
+    if (intento == 1) {
+        aciertosEN++;
+    }
+    res.json({ intentosTotalesEN, aciertosEN });
+});
 
 // Endpoint playlist simplificada
-app.get("/api/playlist", async(req, res) => {
+app.get("/api/playlist", async (req, res) => {
     const data = await fetchPlaylist();
     if (!data || !data.tracks || !data.tracks.data) {
         return res.status(404).json({ error: "No se encontraron canciones" });
@@ -100,36 +148,42 @@ app.get("/api/playlist", async(req, res) => {
     res.json(simplifiedTracks);
 });
 
-// Endpoint random-track
-app.get("/api/random-track", async(req, res) => {
-    const data = await fetchPlaylist();
+// Endpoint random-track (usa siempre la canción actual)
+app.get("/api/random-track", async (req, res) => {
     try {
-        if (!data || !data.tracks || !data.tracks.data.length) {
-            return res.status(404).json({ error: "No se encontraron canciones" });
+        await verificarCancion();
+        if (!cancionActual) return res.status(404).json({ error: "No hay canción asignada" });
+
+        // Fetch directo de Deezer solo para esa canción
+        const response = await fetch(`https://api.deezer.com/track/${cancionActual.id}`);
+        if (!response.ok) throw new Error("Error al pedir track específico");
+
+        const track = await response.json();
+        if (!track || !track.preview) {
+            return res.status(404).json({ error: "Track sin preview válido" });
         }
 
-        let randomTrack;
-        do {
-            const randomIndex = Math.floor(Math.random() * data.tracks.data.length);
-            randomTrack = data.tracks.data[randomIndex];
-        } while (!randomTrack.preview);
+        const tiempoRestante = INTERVALO_CANCION - (Date.now() - ultimaCancion);
 
         res.json({
-            id: randomTrack.id,
-            title: randomTrack.title,
-            artist: randomTrack.artist.name,
-            album: randomTrack.album.title,
-            preview: randomTrack.preview,
-            cover: randomTrack.album.cover_medium,
+            id: track.id,
+            title: track.title,
+            artist: track.artist.name,
+            album: track.album.title,
+            preview: track.preview,
+            cover: track.album.cover_medium,
+            tiempoRestante: Math.floor(tiempoRestante / 1000),
+            intentosTotalesEN: intentosTotalesEN,
+            aciertosEN: aciertosEN
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al obtener la playlist de Deezer" });
+        console.error("❌ Error en /api/random-track:", error);
+        res.status(500).json({ error: "Error al obtener track actual" });
     }
 });
 
 // Proxy de tracks
-app.get("/api/track-proxy/:id", async(req, res) => {
+app.get("/api/track-proxy/:id", async (req, res) => {
     const data = await fetchPlaylist();
     try {
         const track = data.tracks.data.find(t => t.id == req.params.id);
@@ -146,17 +200,24 @@ app.get("/api/track-proxy/:id", async(req, res) => {
         res.status(500).send("Error al reproducir track");
     }
 });
+asignarNuevaCancion();
+const ENV = "prod"
+const PORT = 3501
+// 🚀 Iniciar servidor según entorno
+if (ENV === "prod") {
+    const httpsOptions = {
+        key: fs.readFileSync("/var/www/ssl/nazadoto.com.key"),
+        cert: fs.readFileSync("/var/www/ssl/nazadoto.com.crt"),
+    };
 
-// HTTPS
-const httpsOptions = {
-    key: fs.readFileSync("/var/www/ssl/nazadoto.com.key"),
-    cert: fs.readFileSync("/var/www/ssl/nazadoto.com.crt"),
-};
-
-const PORT = process.env.PORT || 3501;
-https.createServer(httpsOptions, app).listen(PORT, () => {
-    console.log(`Servidor HTTPS corriendo en https://olgadle.nazadoto.com:${PORT}`);
-});
+    https.createServer(httpsOptions, app).listen(PORT, () => {
+        console.log(`🌐 Servidor HTTPS (prod) en https://olgadle.nazadoto.com:${PORT}`);
+    });
+} else {
+    http.createServer(app).listen(PORT, () => {
+        console.log(`🖥️ Servidor HTTP (local) en http://localhost:${PORT}`);
+    });
+}
 
 // Refrescar playlist cada 6 horas automáticamente
 setInterval(() => fetchPlaylist(true), CACHE_TTL);

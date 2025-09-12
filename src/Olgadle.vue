@@ -38,8 +38,8 @@
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px;">
           <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
-            type="text" class="form-control input-size" placeholder="Escribí un nombre..."
-            :disabled="!(intentos > 0)" />
+            @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
+            placeholder="Escribí un nombre..." :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
           <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
             class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
@@ -119,6 +119,7 @@
           </li>
         </ul>
       </div>
+      <p class="aclaracion">Si sabés alguno de los datos faltantes avisame @nazadoto</p>
     </span>
   </div>
 </template>
@@ -758,7 +759,10 @@ export default {
         this.aciertos = response.data.aciertos;
         this.startTimer(response.data.tiempoRestante);
         if (localStorage.getItem('integranteOculto') && localStorage.getItem('integranteOculto') != response.data.integrante) {
-          localStorage.clear();
+          localStorage.removeItem('integranteOculto');
+          localStorage.removeItem('terminado');
+          localStorage.removeItem('historial');
+          localStorage.removeItem('intentos');
           location.reload();
         }
         localStorage.setItem('integranteOculto', response.data.integrante);
@@ -949,6 +953,17 @@ export default {
   align-items: center;
 }
 
+.aclaracion {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-style: italic;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+}
+
 .flecha {
   font-size: 14px;
   font-weight: bold;
@@ -1062,7 +1077,7 @@ export default {
 }
 
 .select-integrantes {
-  max-height: 300px;
+  max-height: 280px;
   overflow: auto;
 }
 

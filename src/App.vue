@@ -24,7 +24,7 @@
 
   </div>
   <router-link v-else to="/" class="boton-container btn-volver">
-    <span class="text-boton">{{ '< ' }}Volver</span>
+    <span class="text-boton">{{ '< ' }}Atrás</span>
   </router-link>
   <router-view />
 </template>

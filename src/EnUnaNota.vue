@@ -7,54 +7,71 @@
 
     <div v-if="currentTrack">
 
-      <!-- Barra de progreso -->
-      <div class="progress-wrapper">
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: (progress * 100) + '%' }"></div>
+      <div v-if="terminado == 0">
 
-          <!-- Líneas divisorias de segmentos -->
-          <div v-for="(duration, index) in cumulativeDurations" :key="index" class="progress-marker"
-            :style="{ left: (duration / totalDuration * 100) + '%' }"></div>
+        <!-- Barra de progreso -->
+        <div class="progress-wrapper">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: (progress * 100) + '%' }"></div>
+
+            <!-- Líneas divisorias de segmentos -->
+            <div v-for="(duration, index) in cumulativeDurations" :key="index" class="progress-marker"
+              :style="{ left: (duration / totalDuration * 100) + '%' }"></div>
+          </div>
+        </div>
+
+        <!-- Controles de reproducción -->
+        <div class="d-flex flex-row gap-2 space-between mb-3">
+          <button @click="playSegment" class="btn-ok">▶</button>
+          <div class="text-center">
+            <label class="c-white">Volumen: {{ Math.round(volume * 100) }}%</label>
+            <input type="range" min="0" max="1" step="0.01" v-model="volume" class="w-100 mt-2" />
+          </div>
+          <button @click="nextSegment" :disabled="currentSegment >= durations.length" class="btn-ok">
+            {{ currentSegment == durations.length - 1 ? '⏹' : '⏭' }}
+          </button>
+        </div>
+
+
+        <!-- Volumen -->
+
+        <!-- Input para adivinar -->
+        <div class="mb-4 mx-auto flex-col" style="max-width: 400px;">
+          <!-- Input y Autocomplete -->
+          <div class="mb-4 position-relative" style="max-width: 400px;">
+            <input ref="inputTrack" v-model="guess" @input="mostrarOpciones = true" @keyup.enter="checkGuess"
+              type="text" class="form-control input-size" placeholder="Escribí el nombre de la canción..." />
+
+            <!-- Autocomplete -->
+            <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
+              class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
+              <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+                class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-2 p-2">
+                {{ opcion.title }} - {{ opcion.artist }}
+              </li>
+            </ul>
+          </div>
+
+
+          <p class="c-white text-center mt-2" v-if="message == 'incorrecto'">❌ Incorrecto, seguí intentando o reproducí
+            el
+            siguiente segmento</p>
         </div>
       </div>
-
-      <!-- Controles de reproducción -->
-      <div class="d-flex flex-row gap-2 space-between mb-3">
-        <button @click="playSegment" :disabled="gameOver" class="btn-ok">▶</button>
-        <div class="text-center">
-          <label class="c-white">Volumen: {{ Math.round(volume * 100) }}%</label>
-          <input type="range" min="0" max="1" step="0.01" v-model="volume" class="w-100 mt-2" />
+      <div v-else class="c-white text-center mb-2">
+        <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
+          '¡Ganaste!'
+        }}</h2>
+        <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
+        <div class="c-white text-center">La canción era: {{ currentTrack.title + ' - ' + currentTrack.artist }}
+          <br>
+          <img :src="currentTrack.cover" alt="" class="square mt-2 mb-2">
         </div>
-        <button @click="nextSegment" :disabled="gameOver || currentSegment >= durations.length" class="btn-ok">
-          {{ currentSegment == durations.length - 1 ? '⏹' : '⏭' }}
-        </button>
-      </div>
-
-
-      <!-- Volumen -->
-
-      <!-- Input para adivinar -->
-      <div class="mb-4 mx-auto flex-col" style="max-width: 400px;">
-        <!-- Input y Autocomplete -->
-        <div class="mb-4 position-relative" style="max-width: 400px;">
-          <input ref="inputTrack" v-model="guess" @input="mostrarOpciones = true" @keyup.enter="checkGuess" type="text"
-            class="form-control input-size" placeholder="Escribí el nombre de la canción..." :disabled="gameOver" />
-
-          <!-- Autocomplete -->
-          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
-            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
-            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
-              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-2 p-2">
-              {{ opcion.title }} - {{ opcion.artist }}
-            </li>
-          </ul>
-        </div>
-
-        <button v-if="gameOver" @click="loadRandomTrack" class="btn btn-success mt-3 mx-auto">
-          Volver a jugar
-        </button>
-        <p class="c-white text-center mt-2" v-if="message == 'incorrecto'">❌ Incorrecto, seguí intentando o reproducí el
-          siguiente segmento</p>
+        <span v-if="terminado != -1">
+          <button class="btn-ok mb-2 mx-auto" @click="compartirResultado">Compartir</button>
+          <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
+        </span>
+        Volvé en {{ tiempoRestante }}
       </div>
 
       <div v-if="modalFin && message === 'perdiste'" class="fondoModal" @click="modalFin = false">
@@ -73,6 +90,10 @@
         <div class="containerModal" @click.stop>
           <div class="headerModal">🎉 ¡Ganaste!</div>
           <div class="bodyModal">Lo lograste en {{ currentSegment + 1 }}/5 intentos</div>
+          <div class="bodyModal">La canción era: {{ currentTrack.title + ' - ' + currentTrack.artist }}
+            <br>
+            <img :src="currentTrack.cover" alt="" class="square mt-2">
+          </div>
           <button class="btn-ok mb-2 mx-auto" @click="compartirResultado">Compartir</button>
           <p class="bodyModal" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
           <button class="btn-ok c-red mx-auto" @click="modalFin = false">Cerrar</button>
@@ -86,7 +107,7 @@
     </div>
 
     <!-- Audio oculto -->
-    <audio ref="audioPlayer" :src="`/api/track-proxy/${currentTrack?.id}`" type="audio/mpeg" hidden></audio>
+    <audio ref="audioPlayer" type="audio/mpeg" hidden></audio>
   </div>
 </template>
 
@@ -95,16 +116,20 @@ import axios from 'axios';
 export default {
   data() {
     return {
+      tiempoRestante: "00:00:00",
       currentTrack: null,
+      intentosTotales: "",
+      aciertos: "",
       audioPlayer: null,
       guess: "",
-      currentSegment: 0,
+      idCancion: localStorage.getItem('idCancion') || null,
+      currentSegment: localStorage.getItem('currentSegment') || 0,
       durations: [1, 3, 5, 10, 30], // los segundos de cada segmento
       totalDuration: 30, // los previews de Deezer son siempre de 30s
       volume: 0.5,
-      gameOver: false,
       message: '',
       progress: 0,
+      terminado: localStorage.getItem('terminadoEN') || 0,
       interval: null,
       modalFin: false,
       mostrarOpciones: false,
@@ -123,13 +148,47 @@ export default {
     document.removeEventListener("click", this.handleClickOutside);
   },
   methods: {
+    async postIntento(valor) {
+      try {
+        const response = await axios.post('/intentoEN', { intento: valor });
+        this.intentosTotales = response.data.intentosTotalesEN;
+        this.aciertos = response.data.aciertosEN;
+
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    segundosAHHMMSS(segundos) {
+      const h = Math.floor(segundos / 3600).toString().padStart(2, "0");
+      const m = Math.floor((segundos % 3600) / 60).toString().padStart(2, "0");
+      const s = Math.floor(segundos % 60).toString().padStart(2, "0");
+      return `${h}:${m}:${s}`;
+    },
+
+    startTimer(segundos) {
+      // Cancelar cualquier timer anterior
+      if (this.timer) clearInterval(this.timer);
+
+      let remaining = segundos;
+      this.tiempoRestante = this.segundosAHHMMSS(remaining);
+
+      this.timer = setInterval(() => {
+        remaining--;
+        if (remaining < 0) {
+          clearInterval(this.timer);
+          this.tiempoRestante = "00:00:00";
+          return;
+        }
+        this.tiempoRestante = this.segundosAHHMMSS(remaining);
+
+      }, 1000);
+    },
     adivinar(track) {
       this.guess = `${track.title}`; // o `${track.title} - ${track.artist}` si querés mostrar artista
       this.mostrarOpciones = false;
       this.checkGuess();
     },
     compartirResultado() {
-      if (!this.gameOver) return
 
       // Armamos un texto estilo Heardle
       const intentosTotales = this.durations.length
@@ -139,7 +198,7 @@ export default {
       // Dibujamos los bloques según aciertos
       let bloques = ""
       for (let i = 0; i < intentosTotales; i++) {
-        if (gano && i < intentosUsados ) {
+        if (gano && i < intentosUsados) {
           bloques += "🟥" // intentos fallidos
         } else if (gano && i === intentosUsados + 1) {
           bloques += "🟩" // acierto
@@ -171,17 +230,25 @@ export default {
         const res = await axios.get("/api/random-track");
         const track = res.data;
 
+        if (this.idCancion && track.id != this.idCancion) {
+          localStorage.removeItem('terminadoEN');
+          localStorage.removeItem('idCancion');
+          localStorage.removeItem('currentSegment');
+          location.reload();
+          return;
+        }
+
         if (!track || !track.preview) {
           console.error("Track inválido o sin preview");
           return;
         }
+        this.idCancion = res.data.id;
+        localStorage.setItem('idCancion', this.idCancion);
+        this.intentosTotales = res.data.intentosTotalesEN;
+        this.aciertos = res.data.aciertosEN;
+        this.startTimer(res.data.tiempoRestante);
 
         this.currentTrack = track;
-        this.currentSegment = 0;
-        this.gameOver = false;
-        this.guess = "";
-        this.message = "";
-        this.progress = 0;
 
         await this.$nextTick();
 
@@ -191,7 +258,11 @@ export default {
           const blob = await response.blob();
           this.audioPlayer.src = URL.createObjectURL(blob);
           this.audioPlayer.volume = this.volume;
-          this.audioPlayer.currentTime = 0;
+          const startTime = this.cumulativeDurations[this.currentSegment] - this.durations[this.currentSegment]
+
+          this.audioPlayer.currentTime = startTime;
+          this.progress = startTime / this.totalDuration;
+
         }
 
       } catch (error) {
@@ -235,23 +306,28 @@ export default {
     nextSegment() {
       if (this.currentSegment < this.durations.length - 1) {
         this.currentSegment++
+        localStorage.setItem('currentSegment', this.currentSegment)
         this.playSegment()
       } else {
-        this.gameOver = true
         this.message = "perdiste"
         this.modalFin = true
+        this.terminado = -1
+        localStorage.setItem('terminadoEN', -1)
+        this.postIntento(0)
       }
     },
     checkGuess() {
-      if (!this.guess.trim() || this.gameOver) return
+      if (!this.guess.trim() || this.terminado != 0) return
 
       const normalizedGuess = this.guess.toLowerCase()
       const normalizedTitle = this.currentTrack.title.toLowerCase()
 
       if (normalizedGuess.includes(normalizedTitle) || normalizedTitle.includes(normalizedGuess)) {
-        this.gameOver = true
         this.message = "ganaste"
         this.modalFin = true;
+        this.terminado = 1
+        localStorage.setItem('terminadoEN', 1)
+        this.postIntento(1);
       } else {
         this.message = "incorrecto"
       }
