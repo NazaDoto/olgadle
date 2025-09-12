@@ -1,8 +1,8 @@
-# olgadle
+# OLGADLE
 
-Jugá a OLGADLE o EN UNA NOTA
+Jugá a OLGADLE o EN UNA NOTA en https://olgadle.nazadoto.com
 
-¿Cómo se juega a Olgadle?
+¿Cómo se juega a OLGADLE?
 - Elegí un integrante de OLGA (conductor, productor o técnica) y te mostrará una serie de pistas (verde = correcto, rojo = incorrecto, amarillo = tiene una coincidencia)
 
 ¿Cómo se juega a EN UNA NOTA?
