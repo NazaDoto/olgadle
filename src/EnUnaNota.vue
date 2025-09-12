@@ -61,7 +61,7 @@
       <div v-else class="c-white text-center mb-2">
         <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
           '¡Ganaste!'
-        }}</h2>
+          }}</h2>
         <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
         <div class="c-white text-center">La canción era: {{ currentTrack.title + ' - ' + currentTrack.artist }}
           <br>
@@ -193,21 +193,23 @@ export default {
       // Armamos un texto estilo Heardle
       const intentosTotales = this.durations.length
       const intentosUsados = this.currentSegment
-      const gano = this.message.includes("ganaste")
 
       // Dibujamos los bloques según aciertos
       let bloques = ""
       for (let i = 0; i < intentosTotales; i++) {
-        if (gano && i < intentosUsados) {
+        if (i < intentosUsados) {
           bloques += "🟥" // intentos fallidos
-        } else if (gano && i === intentosUsados + 1) {
+        } else if (i === intentosUsados + 1) {
           bloques += "🟩" // acierto
-        } else if (!gano && i < intentosTotales) {
+        } else if (!this.terminado == 1 && i < intentosTotales) {
           bloques += "🟥" // todos fallidos
         }
       }
 
-      const texto = `🎵 En Una Nota\n${gano ? `✅ ${intentosUsados + 1}/${intentosTotales} intentos` : "❌ No adivinó"}\n${bloques}`
+      const texto = `En Una Nota del día ${new Date().toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit'
+      })} en ${intentosUsados + 1}/5 intentos\n${bloques}`
 
       navigator.clipboard.writeText(texto).then(() => {
         this.mostrarCopiado = true;
