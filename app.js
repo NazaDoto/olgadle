@@ -270,7 +270,7 @@ let integrantes = [{
         genero: 'Masculino',
         programa: ['Mi Primo Es Así', 'TDL'],
         rol: 'Productor',
-        canta: 'No',
+        canta: 'Sí',
         hizo: 'Producción',
         nacio: '1994',
     },
