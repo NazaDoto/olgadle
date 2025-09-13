@@ -64,7 +64,7 @@
             @keyup.esc="mostrarOpciones = false"
             type="text"
             class="form-control input-size"
-            placeholder="Escribí un nombre..."
+            placeholder="Escribí el nombre de algún integrante..."
             :disabled="!(intentos > 0)"
           />
           <!-- Autocomplete -->
@@ -327,7 +327,7 @@ export default {
         }, index * 600)
       })
       setTimeout(async () => {
-        this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...'
+        this.$refs.inputIntegrante.placeholder = 'Escribí el nombre de algún integrante...'
         this.$refs.inputIntegrante.disabled = false
         this.$refs.inputIntegrante.focus()
         if (item.nombre == this.integranteOculto.nombre) {

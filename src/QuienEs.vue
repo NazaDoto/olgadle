@@ -59,7 +59,7 @@
             @keyup.esc="mostrarOpciones = false"
             type="text"
             class="form-control input-size"
-            placeholder="Escribí un nombre..."
+            placeholder="Escribí el nombre de algún integrante..."
             :disabled="!(intentos > 0)"
           />
           <!-- Autocomplete -->
