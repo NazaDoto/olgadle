@@ -188,7 +188,7 @@ export default {
   methods: {
     compartirResultado() {
       // Crear representación tipo Wordle
-      let resultado = `Olgadle del día ${new Date().toLocaleDateString('es-AR', {
+      let resultado = `¿Quién es? del día ${new Date().toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit',
       })} en ${5 - this.intentos}/5 intentos\n`
