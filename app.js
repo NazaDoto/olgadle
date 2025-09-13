@@ -95,6 +95,16 @@ let integrantes = [{
         nacio: '2003',
     },
     {
+        img: 'capi.jpg',
+        nombre: 'Capi',
+        genero: 'Masculino',
+        programa: ['TDL'],
+        rol: 'Productor',
+        canta: 'No',
+        hizo: 'Producción',
+        nacio: 'No sé',
+    },
+    {
         img: 'coker.jpg',
         nombre: 'Coker',
         genero: 'Masculino',
@@ -425,6 +435,16 @@ let integrantes = [{
         nacio: 'No sé',
     },
     {
+        img: 'noe.jpg',
+        nombre: 'Noelia Custodio',
+        genero: 'Femenino',
+        programa: ['Mi Primo Es Así'],
+        rol: 'Conductor',
+        canta: 'No',
+        hizo: 'Gelatina',
+        nacio: '1989',
+    },
+    {
         img: 'paula.jpg',
         nombre: 'Paula Chaves',
         genero: 'Femenino',
@@ -560,7 +580,7 @@ let integrantes = [{
 let playlistCache = null
 let lastFetchTime = 0
 const CACHE_TTL = 15 * 60 * 1000 // 15 minutos
-const totalIntegrantes = 53
+const totalIntegrantes = 55
 
 // Elegir nueva canción con preview
 async function asignarNuevaCancion() {

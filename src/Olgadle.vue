@@ -2,10 +2,15 @@
   <div v-if="modalFin && textoModal === 'Perdiste :('" class="fondoModal" @click="modalFin = false">
     <div class="containerModal" @click.stop>
       <div class="headerModal">{{ textoModal }}</div>
-      <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">Era {{ integranteOculto.nombre }}
-        <br>
-        <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
-          class="square mt-2">
+      <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">
+        Era {{ integranteOculto.nombre }}
+        <br />
+        <img
+          v-if="integranteOculto && integranteOculto.img"
+          :src="'/img/' + integranteOculto.img"
+          alt=""
+          class="square mt-2"
+        />
       </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -22,29 +27,59 @@
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
     </div>
   </div>
-
+  <div class="fondoModal" @click="mostrarTutorial = false" v-if="mostrarTutorial">
+    <div class="containerModal" @click.stop>
+      <div class="headerModal">Tutorial</div>
+      <p class="bodyModal">
+        Primero escribí el nombre de un integrante de OLGA (conductor, productor o técnica).<br />
+        Seguí las pistas que irán apareciendo: <br />🟩Verde = correcto <br />🟨Amarillo = coincide una de los dos,
+         <br />🟥Rojo = incorrecto. <br />
+        Intentá hasta que todas las pistas sean verdes.
+      </p>
+      <button class="btn-ok" @click="mostrarTutorial = false">Entendido!</button>
+    </div>
+  </div>
   <div class="container py-5">
     <div class="w-fit-content mx-auto">
-      <img src="/logo.png" class="logo" alt="">
+      <img src="/logo.png" class="logo" alt="" />
     </div>
-    <p class="lead text-center mt-2 mb-2 adivina-container">¡Adiviná el integrante de OLGA de hoy!</p>
+    <p class="lead text-center mt-2 mb-2 adivina-container">
+      ¡Adiviná el integrante de OLGA de hoy!
+    </p>
     <div v-if="cargando" class="loader-container">
       <div class="spinner"></div>
     </div>
 
     <span v-else>
       <span v-if="terminado == 0">
+        <button class="btn-ok mb-2 c-yellow" @click="mostrarTutorial = true">Tutorial</button>
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
         <!-- Input y Autocomplete -->
-        <div class="mb-4 position-relative mx-auto" style="max-width: 400px;">
-          <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
-            @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
-            placeholder="Escribí un nombre..." :disabled="!(intentos > 0)" />
+        <div class="mb-4 position-relative mx-auto" style="max-width: 400px">
+          <input
+            ref="inputIntegrante"
+            v-model="intento"
+            @input="mostrarOpciones = true"
+            @keyup.enter="enterSeleccion"
+            @keyup.esc="mostrarOpciones = false"
+            type="text"
+            class="form-control input-size"
+            placeholder="Escribí un nombre..."
+            :disabled="!(intentos > 0)"
+          />
           <!-- Autocomplete -->
-          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
-            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10;">
-            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
-              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
+          <ul
+            v-if="mostrarOpciones && opcionesFiltradas.length"
+            ref="containerRef"
+            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav"
+            style="z-index: 10"
+          >
+            <li
+              v-for="(opcion, index) in opcionesFiltradas"
+              :key="index"
+              @click="adivinar(opcion)"
+              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3"
+            >
               <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square" />
               {{ opcion.nombre }}
             </li>
@@ -53,12 +88,13 @@
       </span>
 
       <div v-else class="c-white text-center mb-2">
-        <h2 :class="(terminado == -1) ? 'texto-perdiste' : 'texto-ganaste'"> {{ (terminado == -1) ? 'Perdiste' :
-          '¡Ganaste!'
-        }}</h2>
-        <p class="c-white">{{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}</p>
+        <h2 :class="terminado == -1 ? 'texto-perdiste' : 'texto-ganaste'">
+          {{ terminado == -1 ? 'Perdiste' : '¡Ganaste!' }}
+        </h2>
+        <p class="c-white">
+          {{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}
+        </p>
         <span v-if="terminado != -1">
-
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
         </span>
@@ -67,8 +103,10 @@
       <!-- Historial -->
       <div class="mx-auto" id="historialContainer">
         <!-- Encabezados de atributos -->
-        <div v-if="historial.length > 0"
-          class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2">
+        <div
+          v-if="historial.length > 0"
+          class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2"
+        >
           <div class="col-width">Integrante</div>
           <div class="col-width">Género</div>
           <div class="col-width">Programa</div>
@@ -79,33 +117,60 @@
         </div>
 
         <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto">
-          <li v-for="(item) in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744 mb-1">
+          <li
+            v-for="item in historial"
+            :key="item.nombre"
+            class="list-group-item d-flex gap-1 bg-none w-744 mb-1"
+          >
             <div class="square relative" v-show="item.img && item.mostrar.img">
               <div class="inset-shadow absolute-100 rounded"></div>
               <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'genero')" v-show="item.mostrar.genero">
+            <div
+              class="square padding-text"
+              :class="atributoColor(item, 'genero')"
+              v-show="item.mostrar.genero"
+            >
               {{ item.genero }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'programa')" v-show="item.mostrar.programa">
+            <div
+              class="square padding-text"
+              :class="atributoColor(item, 'programa')"
+              v-show="item.mostrar.programa"
+            >
               {{ item.programa.join(' / ') }}
             </div>
-            <div class="square padding-text" :class="atributoColor(item, 'rol')" v-show="item.mostrar.rol">
+            <div
+              class="square padding-text"
+              :class="atributoColor(item, 'rol')"
+              v-show="item.mostrar.rol"
+            >
               {{ item.rol }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'canta')" v-show="item.mostrar.canta">
+            <div
+              class="square padding-text"
+              :class="atributoColor(item, 'canta')"
+              v-show="item.mostrar.canta"
+            >
               {{ item.canta }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'hizo')" v-show="item.mostrar.hizo">
+            <div
+              class="square padding-text"
+              :class="atributoColor(item, 'hizo')"
+              v-show="item.mostrar.hizo"
+            >
               {{ item.hizo }}
             </div>
 
-            <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
-              v-show="item.mostrar.nacio">
+            <div
+              class="square padding-text nacio-box"
+              :class="atributoColor(item, 'nacio')"
+              v-show="item.mostrar.nacio"
+            >
               <!-- Flechita arriba -->
               <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">▲</span>
 
@@ -115,7 +180,6 @@
               <!-- Flechita abajo -->
               <span v-if="item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">▼</span>
             </div>
-
           </li>
         </ul>
       </div>
@@ -125,14 +189,15 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from 'axios'
 export default {
-  name: "OlgadleApp",
+  name: 'OlgadleApp',
   data() {
     return {
       cargando: true,
-      tiempoRestante: "00:00:00",
+      tiempoRestante: '00:00:00',
       timer: null,
+      mostrarTutorial: false,
       mostrarCopiado: false,
       modalFin: false,
       textoModal: '',
@@ -140,201 +205,205 @@ export default {
       integrantes: JSON.parse(localStorage.getItem('integrantes')) || [],
       integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 7,
-      intento: "",
+      intento: '',
       intentosTotales: 0,
       aciertos: 0,
       terminado: localStorage.getItem('terminado') || 0,
-      mostrarOpciones: false
-    };
+      mostrarOpciones: false,
+    }
   },
 
   computed: {
     opcionesFiltradas() {
       if (!this.intento) {
-        return this.integrantes;
+        return this.integrantes
       }
 
-      const nombresHistorial = this.historial.map(i => i.nombre);
-      const input = this.intento.toLowerCase();
+      const nombresHistorial = this.historial.map((i) => i.nombre)
+      const input = this.intento.toLowerCase()
 
       return this.integrantes
-        .filter(i => !nombresHistorial.includes(i.nombre))
-        .filter(i => i.nombre.toLowerCase().includes(input))
+        .filter((i) => !nombresHistorial.includes(i.nombre))
+        .filter((i) => i.nombre.toLowerCase().includes(input))
         .sort((a, b) => {
-          const nombreA = a.nombre.toLowerCase();
-          const nombreB = b.nombre.toLowerCase();
+          const nombreA = a.nombre.toLowerCase()
+          const nombreB = b.nombre.toLowerCase()
 
           // Contar coincidencias de letras en orden
           const countMatches = (nombre) => {
-            let count = 0;
+            let count = 0
             for (let i = 0; i < input.length; i++) {
-              if (nombre[i] === input[i]) count++;
+              if (nombre[i] === input[i]) count++
             }
-            return count;
+            return count
           }
 
-          return countMatches(nombreB) - countMatches(nombreA); // descendente
-        });
-    }
+          return countMatches(nombreB) - countMatches(nombreA) // descendente
+        })
+    },
   },
 
   methods: {
-    async fetchIntegrantes(){
-      if (this.integrantes.length > 0) return;
+    async fetchIntegrantes() {
       try {
-        const response = await axios.get('/integrantes');
-        this.integrantes = response.data;
-        localStorage.setItem('integrantes', JSON.stringify(this.integrantes));
+        const response = await axios.get('/integrantes')
+        this.integrantes = response.data
+        localStorage.setItem('integrantes', JSON.stringify(this.integrantes))
       } catch (error) {
-        console.error("Error fetching integrantes:", error);
+        console.error('Error fetching integrantes:', error)
       }
     },
     compartirResultado() {
       // Crear representación tipo Wordle
       let resultado = `Olgadle del día ${new Date().toLocaleDateString('es-AR', {
         day: '2-digit',
-        month: '2-digit'
-      })} en ${(7 - this.intentos)}/7 intentos\n`;
+        month: '2-digit',
+      })} en ${7 - this.intentos}/7 intentos\n`
 
       this.historial.forEach((item) => {
-        let fila = "";
+        let fila = ''
 
         // Recorremos atributos importantes
-        const atributos = ["genero", "programa", "rol", "canta", "hizo", "nacio"];
+        const atributos = ['genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
         atributos.forEach((attr) => {
-          const valorOculto = this.integranteOculto[attr];
+          const valorOculto = this.integranteOculto[attr]
 
           if (Array.isArray(item[attr])) {
-            const intersect = item[attr].filter((v) => valorOculto.includes(v));
+            const intersect = item[attr].filter((v) => valorOculto.includes(v))
             if (intersect.length === valorOculto.length && intersect.length === item[attr].length) {
-              fila += "🟩";
+              fila += '🟩'
             } else if (intersect.length > 0) {
-              fila += "🟨";
+              fila += '🟨'
             } else {
-              fila += "🟥";
+              fila += '🟥'
             }
           } else {
             if (item[attr] === valorOculto) {
-              fila += "🟩";
+              fila += '🟩'
             } else {
-              fila += "🟥";
+              fila += '🟥'
             }
           }
-        });
+        })
 
-        resultado += fila + "\n";
-      });
+        resultado += fila + '\n'
+      })
 
       // Copiar al portapapeles
       navigator.clipboard.writeText(resultado).then(() => {
-        this.mostrarCopiado = true;
-      });
+        this.mostrarCopiado = true
+      })
     },
     async fetchIntegrante() {
       try {
-        const response = await axios.get('/integrante');
-        this.integranteOculto = this.integrantes[response.data.integrante];
-        this.intentosTotales = response.data.intentosTotales;
-        this.aciertos = response.data.aciertos;
-        this.startTimer(response.data.tiempoRestante);
-        if (localStorage.getItem('integranteOculto') && localStorage.getItem('integranteOculto') != response.data.integrante) {
-          localStorage.removeItem('integranteOculto');
-          localStorage.removeItem('terminado');
-          localStorage.removeItem('historial');
-          localStorage.removeItem('intentos');
-          location.reload();
+        const response = await axios.get('/integrante')
+        this.integranteOculto = this.integrantes[response.data.integrante]
+        this.intentosTotales = response.data.intentosTotales
+        this.aciertos = response.data.aciertos
+        this.startTimer(response.data.tiempoRestante)
+        if (
+          localStorage.getItem('integranteOculto') &&
+          localStorage.getItem('integranteOculto') != response.data.integrante
+        ) {
+          localStorage.removeItem('integranteOculto')
+          localStorage.removeItem('terminado')
+          localStorage.removeItem('historial')
+          localStorage.removeItem('intentos')
+          location.reload()
         }
-        localStorage.setItem('integranteOculto', response.data.integrante);
+        localStorage.setItem('integranteOculto', response.data.integrante)
       } catch (error) {
-        console.log('error' + error);
+        console.log('error' + error)
       } finally {
-        this.cargando = false;
+        this.cargando = false
       }
     },
     revelarAtributos(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio'];
-
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
 
       atributos.forEach((attr, index) => {
         setTimeout(() => {
-          item.mostrar[attr] = true;
-        }, index * 600);
-      });
+          item.mostrar[attr] = true
+        }, index * 600)
+      })
       setTimeout(async () => {
-        this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...';
-        this.$refs.inputIntegrante.disabled = false;
-        this.$refs.inputIntegrante.focus();
+        this.$refs.inputIntegrante.placeholder = 'Escribí un nombre...'
+        this.$refs.inputIntegrante.disabled = false
+        this.$refs.inputIntegrante.focus()
         if (item.nombre == this.integranteOculto.nombre) {
-          this.mostrarModal('GANASTE!!!');
-          this.terminado = 1;
-          localStorage.setItem('terminado', this.terminado);
-          this.postIntento(1);
+          this.mostrarModal('GANASTE!!!')
+          this.terminado = 1
+          localStorage.setItem('terminado', this.terminado)
+          this.postIntento(1)
         } else if (this.intentos == 0) {
-          this.mostrarModal('Perdiste :(');
-          this.terminado = -1;
-          this.intentosTotales++;
-          localStorage.setItem('terminado', this.terminado);
-          this.postIntento(0);
+          this.mostrarModal('Perdiste :(')
+          this.terminado = -1
+          this.intentosTotales++
+          localStorage.setItem('terminado', this.terminado)
+          this.postIntento(0)
         }
-      }, atributos.length * 600);
+      }, atributos.length * 600)
     },
     async postIntento(valor) {
       try {
-        const response = await axios.post('/intento', { intento: valor });
+        const response = await axios.post('/intento', { intento: valor })
         console.log(response)
-        this.intentosTotales = response.data.intentosTotales;
-        this.aciertos = response.data.aciertos;
-
+        this.intentosTotales = response.data.intentosTotales
+        this.aciertos = response.data.aciertos
       } catch (error) {
         console.log(error)
       }
     },
     revelarAtributosSinIntento(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio'];
-
+      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
 
       atributos.forEach((attr, index) => {
         setTimeout(() => {
-          item.mostrar[attr] = true;
-        }, index * 600);
-      });
+          item.mostrar[attr] = true
+        }, index * 600)
+      })
     },
     mostrarModal(texto) {
-      this.modalFin = true;
-      this.textoModal = texto;
+      this.modalFin = true
+      this.textoModal = texto
     },
     segundosAHHMMSS(segundos) {
-      const h = Math.floor(segundos / 3600).toString().padStart(2, "0");
-      const m = Math.floor((segundos % 3600) / 60).toString().padStart(2, "0");
-      const s = Math.floor(segundos % 60).toString().padStart(2, "0");
-      return `${h}:${m}:${s}`;
+      const h = Math.floor(segundos / 3600)
+        .toString()
+        .padStart(2, '0')
+      const m = Math.floor((segundos % 3600) / 60)
+        .toString()
+        .padStart(2, '0')
+      const s = Math.floor(segundos % 60)
+        .toString()
+        .padStart(2, '0')
+      return `${h}:${m}:${s}`
     },
 
     startTimer(segundos) {
       // Cancelar cualquier timer anterior
-      if (this.timer) clearInterval(this.timer);
+      if (this.timer) clearInterval(this.timer)
 
-      let remaining = segundos;
-      this.tiempoRestante = this.segundosAHHMMSS(remaining);
+      let remaining = segundos
+      this.tiempoRestante = this.segundosAHHMMSS(remaining)
 
       this.timer = setInterval(() => {
-        remaining--;
+        remaining--
         if (remaining < 0) {
-          clearInterval(this.timer);
-          this.tiempoRestante = "00:00:00";
-          return;
+          clearInterval(this.timer)
+          this.tiempoRestante = '00:00:00'
+          return
         }
-        this.tiempoRestante = this.segundosAHHMMSS(remaining);
-
-      }, 1000);
+        this.tiempoRestante = this.segundosAHHMMSS(remaining)
+      }, 1000)
     },
     adivinar(integrante) {
-      this.$refs.inputIntegrante.placeholder = 'Verificando...';
-      this.$refs.inputIntegrante.disabled = true;
+      this.$refs.inputIntegrante.placeholder = 'Verificando...'
+      this.$refs.inputIntegrante.disabled = true
 
-      if (!integrante) return;
+      if (!integrante) return
 
-      const correcto = integrante.id === this.integranteOculto.id;
+      const correcto = integrante.id === this.integranteOculto.id
 
       // Crear un objeto con los atributos, todos ocultos al principio
       const nuevoItem = {
@@ -348,76 +417,73 @@ export default {
           hizo: false,
           programa: false,
           nacio: false,
-        }
-      };
+        },
+      }
 
-      this.historial.push(nuevoItem);
-      localStorage.setItem('historial', JSON.stringify(this.historial));
+      this.historial.push(nuevoItem)
+      localStorage.setItem('historial', JSON.stringify(this.historial))
 
-      this.intentos--;
-      localStorage.setItem('intentos', this.intentos);
-      this.intento = "";
-      this.mostrarOpciones = false;
-
+      this.intentos--
+      localStorage.setItem('intentos', this.intentos)
+      this.intento = ''
+      this.mostrarOpciones = false
 
       // Eliminar el integrante del arreglo de opciones
-      const index = this.integrantes.findIndex(i => i.nombre === integrante.nombre);
+      const index = this.integrantes.findIndex((i) => i.nombre === integrante.nombre)
       if (index !== -1) {
-        this.integrantes.splice(index, 1);
+        this.integrantes.splice(index, 1)
       }
       // Mostrar los atributos uno a uno
-      this.revelarAtributos(this.historial[this.historial.length - 1]);
+      this.revelarAtributos(this.historial[this.historial.length - 1])
     },
-
 
     enterSeleccion() {
       if (this.opcionesFiltradas.length > 0) {
-        this.adivinar(this.opcionesFiltradas[0]);
+        this.adivinar(this.opcionesFiltradas[0])
       }
     },
 
     atributoColor(item, atributo) {
-      const valorOculto = this.integranteOculto[atributo];
+      const valorOculto = this.integranteOculto[atributo]
 
       if (Array.isArray(item[atributo])) {
-        const intersect = item[atributo].filter((v) => valorOculto.includes(v));
+        const intersect = item[atributo].filter((v) => valorOculto.includes(v))
         if (intersect.length === valorOculto.length && intersect.length === item[atributo].length)
-          return "bg-success text-white p-1 rounded";
-        if (intersect.length > 0) return "bg-warning text-dark p-1 rounded";
-        return "bg-danger text-white p-1 rounded";
+          return 'bg-success text-white p-1 rounded'
+        if (intersect.length > 0) return 'bg-warning text-dark p-1 rounded'
+        return 'bg-danger text-white p-1 rounded'
       }
 
-      if (item[atributo] === valorOculto) return "bg-success text-white p-1 rounded";
-      if (atributo === "rol" || atributo === "programa") {
-        if (Array.isArray(valorOculto) && valorOculto.includes(item[atributo])) return "bg-warning text-dark p-1 rounded";
+      if (item[atributo] === valorOculto) return 'bg-success text-white p-1 rounded'
+      if (atributo === 'rol' || atributo === 'programa') {
+        if (Array.isArray(valorOculto) && valorOculto.includes(item[atributo]))
+          return 'bg-warning text-dark p-1 rounded'
       }
-      return "bg-danger text-white p-1 rounded";
+      return 'bg-danger text-white p-1 rounded'
     },
     handleClickOutside(event) {
-      const container = this.$refs.containerRef;
+      const container = this.$refs.containerRef
       if (container && !container.contains(event.target)) {
-        this.mostrarOpciones = false;
+        this.mostrarOpciones = false
       }
-    }
+    },
   },
   mounted() {
-    document.addEventListener("click", this.handleClickOutside);
-    this.fetchIntegrante();
-    this.fetchIntegrantes();
+    document.addEventListener('click', this.handleClickOutside)
+    this.fetchIntegrante()
+    this.fetchIntegrantes()
     if (this.historial.length > 0) {
       this.historial.forEach((item) => {
         // Asegurarse de que todos los atributos estén visibles
-        this.revelarAtributosSinIntento(item);
-      });
+        this.revelarAtributosSinIntento(item)
+      })
     }
-
   },
   unmounted() {
-    document.removeEventListener("click", this.handleClickOutside);
-    if (this.timer) clearInterval(this.timer);
-
-  }
-};
+    document.removeEventListener('click', this.handleClickOutside)
+    if (this.timer) clearInterval(this.timer)
+  },
+}
 </script>
 
 <style>
@@ -443,7 +509,14 @@ export default {
   color: rgba(255, 255, 255, 0.3);
   font-size: 10px;
 }
+.c-yellow{
+  background-color: rgb(255, 212, 82) !important;
+  color:black !important;
+}
+.c-yellow:hover{
+  background-color: rgb(235, 190, 56) !important;
 
+}
 .flecha {
   font-size: 14px;
   font-weight: bold;
@@ -464,7 +537,6 @@ export default {
   transform: translateY(calc(-50% + 20px));
   color: white;
 }
-
 
 .loader-container {
   display: flex;
@@ -610,7 +682,6 @@ export default {
 
 /* Fondo principal */
 
-
 /* Modal */
 .fondoModal {
   position: fixed;
@@ -644,6 +715,7 @@ export default {
   font-size: 1rem;
   color: #555;
   text-align: center;
+  text-justify: justify;
   margin-bottom: 20px;
 }
 
@@ -703,7 +775,7 @@ img {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .text-sm {
@@ -775,15 +847,12 @@ body {
   box-shadow: inset 0 0 6px #000;
 }
 
-
-
 /* =====================
    MEDIA QUERIES (DESKTOP → MOBILE)
    ===================== */
 
 /* Tablets (≤ 992px) */
 @media (max-width: 992px) {
-
   .container,
   .container-lg,
   .container-md,
@@ -928,8 +997,6 @@ body {
     padding: 0 !important;
   }
 
-
-
   .square {
     width: 50px;
     height: 50px;
@@ -945,8 +1012,6 @@ body {
     padding: 0;
     margin: auto;
   }
-
-
 }
 
 /* Teléfonos grandes (≤ 380px) */
@@ -991,8 +1056,6 @@ body {
     padding: 0 !important;
   }
 
-
-
   .square {
     width: 50px;
     height: 50px;
@@ -1008,7 +1071,5 @@ body {
     padding: 0;
     margin: auto;
   }
-
-
 }
 </style>

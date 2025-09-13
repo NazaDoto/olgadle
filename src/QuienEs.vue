@@ -319,7 +319,6 @@ export default {
       }
     },
     async fetchIntegrantes() {
-      if (this.integrantes.length > 0) return
       try {
         const response = await axios.get('/integrantes')
         this.integrantes = response.data
