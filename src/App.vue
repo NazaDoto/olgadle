@@ -19,12 +19,24 @@
           <span class="text-boton">Adiviná la canción en pocos segundos.</span>
         </div>
       </router-link>
+
+      <!-- Botón Quien Es -->
+      <router-link to="/quien-es" class="flex-row boton-container gap-2">
+        <img src="/quienes.png" alt="¿Quién Es?" class="img-boton" />
+        <div class="content-boton flex-col">
+          <h1 class="titulo-boton">¿Quién Es?</h1>
+          <span class="text-boton">Adiviná de quién es la foto del integrante de OLGA.</span>
+        </div>
+      </router-link>
       <!-- Vista dinámica -->
     </div>
 
   </div>
   <router-link v-else to="/" class="boton-container btn-volver">
-    <span class="text-boton">{{ '< ' }}Atrás</span>
+    <span class="text-boton"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg></span>
   </router-link>
   <router-view />
 </template>
@@ -38,6 +50,7 @@
   position: sticky;
   top: 5px;
   left: 5px;
+  border-radius: 100% !important;
 }
 
 .boton-container {
@@ -101,5 +114,6 @@
 .img-boton {
   height: 100px;
   width: 100px;
+  object-fit: contain;
 }
 </style>
