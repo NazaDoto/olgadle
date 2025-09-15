@@ -341,7 +341,7 @@ export default {
       if (this.integrantes.length > 0) return
       try {
         const response = await axios.get('/integrantes')
-        this.integrantes = response.data
+        this.integrantes = await response.data
         localStorage.setItem('integrantes', JSON.stringify(this.integrantes))
       } catch (error) {
         console.error('Error fetching integrantes:', error)
