@@ -412,7 +412,7 @@ export default {
         this.tiempoRestante = this.segundosAHHMMSS(remaining)
       }, 1000)
     },
-    adivinar(integrante) {
+    async adivinar(integrante) {
       console.log(integrante)
       this.$refs.inputIntegrante.placeholder = 'Verificando...'
       this.$refs.inputIntegrante.disabled = true

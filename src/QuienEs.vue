@@ -294,7 +294,7 @@ export default {
         this.tiempoRestante = this.segundosAHHMMSS(remaining)
       }, 1000)
     },
-    adivinar(integrante) {
+    async adivinar(integrante) {
       if (!integrante) return
 
       if (integrante.nombre === this.integranteOculto.nombre) {

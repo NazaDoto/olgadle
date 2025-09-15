@@ -239,7 +239,7 @@ export default {
         this.tiempoRestante = this.segundosAHHMMSS(remaining)
       }, 1000)
     },
-    adivinar(track) {
+    async adivinar(track) {
       this.mostrarOpciones = false
       this.intentos++
       localStorage.setItem('intentosEN', this.intentos)
