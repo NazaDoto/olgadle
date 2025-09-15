@@ -114,7 +114,10 @@
       <div v-if="modalFin && message === 'ganaste'" class="fondoModal" @click="modalFin = false">
         <div class="containerModal" @click.stop>
           <div class="headerModal">🎉 ¡Ganaste!</div>
-          <div class="bodyModal">Lo lograste en {{ currentSegment + 1 }}/5 intentos</div>
+          <div class="bodyModal">
+            Lo lograste en el
+            {{ intentos + 'º intento. ' + '(' + (intentosUsados == 1 ? 'skip' : 'skips') + ')' }}
+          </div>
           <div class="bodyModal">
             La canción era: {{ currentTrack.title + ' - ' + currentTrack.artist }}
             <br />
@@ -266,8 +269,6 @@ export default {
       this.guess = ''
     },
     compartirResultado() {
-      // Armamos un texto estilo Heardle
-      const intentosTotales = this.durations.length
       const intentosUsados = this.currentSegment
 
       // Dibujamos los bloques según aciertos
