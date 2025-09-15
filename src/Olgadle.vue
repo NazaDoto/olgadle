@@ -413,6 +413,7 @@ export default {
       }, 1000)
     },
     adivinar(integrante) {
+      console.log(integrante)
       this.$refs.inputIntegrante.placeholder = 'Verificando...'
       this.$refs.inputIntegrante.disabled = true
 
