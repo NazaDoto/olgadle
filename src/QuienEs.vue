@@ -90,17 +90,17 @@
           {{ 'Acertaron ' + aciertos + ' de ' + intentosTotales + ' personas.' }}
         </p>
         <div class="c-white" v-if="integranteOculto && integranteOculto.nombre">
-        El integrante oculto era: {{ integranteOculto.nombre }}
-        <br />
-        <div class="img-wrapper mt-2 mb-2">
-          <img
-            v-if="integranteOculto && integranteOculto.img"
-            :src="'/img/' + integranteOculto.img"
-            alt=""
-            class="img-5 mt-2 mb-2"
-          />
+          El integrante oculto era: {{ integranteOculto.nombre }}
+          <br />
+          <div class="img-wrapper mt-2 mb-2">
+            <img
+              v-if="integranteOculto && integranteOculto.img"
+              :src="'/img/' + integranteOculto.img"
+              alt=""
+              class="img-5 mt-2 mb-2"
+            />
+          </div>
         </div>
-      </div>
         <span v-if="terminado != -1">
           <button class="btn-ok mb-2" @click="compartirResultado">Compartir</button>
           <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
@@ -113,7 +113,12 @@
           <li
             v-for="item in historial"
             :key="item.nombre"
-            class="flex-col-li" :class="item.nombre === integranteOculto?.nombre ? 'bg-success text-white p-1 rounded' : 'bg-danger text-white p-1 rounded'"
+            class="flex-col-li"
+            :class="
+              item.nombre === integranteOculto?.nombre
+                ? 'bg-success text-white p-1 rounded'
+                : 'bg-danger text-white p-1 rounded'
+            "
           >
             <div class="square relative" v-show="item.img">
               <div class="inset-shadow absolute-100 rounded"></div>
@@ -152,6 +157,7 @@ export default {
       aciertos: 0,
       terminado: localStorage.getItem('terminadoQE') || 0,
       mostrarOpciones: false,
+      version: localStorage.getItem('version') || null,
     }
   },
 
@@ -186,6 +192,19 @@ export default {
   },
 
   methods: {
+    async checkVersion() {
+      try {
+        const response = await axios.get('/api/version')
+        if (this.version != response.data.version) {
+          this.version = response.data.version
+          localStorage.clear()
+          localStorage.setItem('version', this.version)
+          location.reload()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
     compartirResultado() {
       // Crear representación tipo Wordle
       let resultado = `¿Quién es? del día ${new Date().toLocaleDateString('es-AR', {
@@ -289,7 +308,7 @@ export default {
         localStorage.setItem('terminadoQE', this.terminado)
         this.postIntento(0)
       }
-      if(this.terminado == 0){
+      if (this.terminado == 0) {
         this.$refs.inputIntegrante.focus()
       }
       this.historial.push(integrante)
@@ -319,6 +338,7 @@ export default {
       }
     },
     async fetchIntegrantes() {
+      if (this.integrantes.length > 0) return
       try {
         const response = await axios.get('/integrantes')
         this.integrantes = response.data
@@ -332,6 +352,7 @@ export default {
     document.addEventListener('click', this.handleClickOutside)
     this.fetchIntegrantes()
     this.fetchIntegranteQE()
+    this.checkVersion()
   },
   unmounted() {
     document.removeEventListener('click', this.handleClickOutside)
@@ -341,18 +362,18 @@ export default {
 </script>
 
 <style scoped>
-.flex-col-intento{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+.flex-col-intento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap:10px;
+  gap: 10px;
 }
-.flex-col-li{
+.flex-col-li {
   display: flex;
   flex-direction: column;
   width: 200px;
-  align-items:center;
+  align-items: center;
   margin: auto;
 }
 .correcto {

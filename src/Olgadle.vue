@@ -32,8 +32,8 @@
       <div class="headerModal">Tutorial</div>
       <p class="bodyModal">
         Primero escribí el nombre de un integrante de OLGA (conductor, productor o técnica).<br />
-        Seguí las pistas que irán apareciendo: <br />🟩Verde = correcto <br />🟨Amarillo = coincide una de los dos,
-         <br />🟥Rojo = incorrecto. <br />
+        Seguí las pistas que irán apareciendo: <br />🟩Verde = correcto <br />🟨Amarillo = coincide
+        una de los dos, <br />🟥Rojo = incorrecto. <br />
         Intentá hasta que todas las pistas sean verdes.
       </p>
       <button class="btn-ok" @click="mostrarTutorial = false">Entendido!</button>
@@ -205,6 +205,7 @@ export default {
       integrantes: JSON.parse(localStorage.getItem('integrantes')) || [],
       integranteOculto: null,
       intentos: localStorage.getItem('intentos') || 7,
+      version: localStorage.getItem('version') || null,
       intento: '',
       intentosTotales: 0,
       aciertos: 0,
@@ -244,7 +245,21 @@ export default {
   },
 
   methods: {
+    async checkVersion() {
+      try {
+        const response = await axios.get('/api/version')
+        if (this.version != response.data.version) {
+          this.version = response.data.version
+          localStorage.clear()
+          localStorage.setItem('version', this.version)
+          location.reload()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async fetchIntegrantes() {
+      if (this.integrantes.length > 0) return
       try {
         const response = await axios.get('/integrantes')
         this.integrantes = response.data
@@ -469,6 +484,7 @@ export default {
     },
   },
   mounted() {
+    this.checkVersion()
     document.addEventListener('click', this.handleClickOutside)
     this.fetchIntegrante()
     this.fetchIntegrantes()
@@ -509,13 +525,12 @@ export default {
   color: rgba(255, 255, 255, 0.3);
   font-size: 10px;
 }
-.c-yellow{
+.c-yellow {
   background-color: rgb(255, 212, 82) !important;
-  color:black !important;
+  color: black !important;
 }
-.c-yellow:hover{
+.c-yellow:hover {
   background-color: rgb(235, 190, 56) !important;
-
 }
 .flecha {
   font-size: 14px;

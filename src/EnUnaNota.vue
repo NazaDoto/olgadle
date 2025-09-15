@@ -5,7 +5,7 @@
     </div>
     <p class="lead text-center mt-2 mb-2 adivina-container">¡Adiviná la canción de hoy!</p>
 
-    <div v-if="currentTrack">
+    <div v-if="currentTrack && !cargando">
       <div v-if="terminado == 0">
         <!-- Barra de progreso -->
         <div class="progress-wrapper">
@@ -89,11 +89,13 @@
           <br />
           <img :src="currentTrack.cover" alt="" class="square mt-2 mb-2" />
         </div>
-        <span v-if="terminado != -1">
-          <button class="btn-ok mb-2 mx-auto" @click="compartirResultado">Compartir</button>
-          <p class="c-white" v-if="mostrarCopiado">Resultado copiado en el portapapeles.</p>
-        </span>
-        Volvé en {{ tiempoRestante }}
+        <!-- 🔥 si quedan canciones, botón siguiente -->
+        <div v-if="currentGameIndex < tracksDelDia.length - 1">
+          <button class="btn-ok mb-2 mx-auto" @click="siguienteCancion">Siguiente canción</button>
+        </div>
+
+        <!-- 🔥 si ya jugó todas -->
+        <div v-else>Volvé en {{ tiempoRestante }}</div>
       </div>
 
       <div v-if="modalFin && message === 'perdiste'" class="fondoModal" @click="modalFin = false">
@@ -139,40 +141,60 @@
 import axios from 'axios'
 export default {
   data() {
+    const savedTracks = JSON.parse(localStorage.getItem('tracksDelDia')) || []
+    const savedIndex = parseInt(localStorage.getItem('currentGameIndex')) || 0
+    const savedSegment = parseInt(localStorage.getItem('currentSegment')) || 0
     return {
       tiempoRestante: '00:00:00',
-      currentTrack: null,
+      tracksDelDia: savedTracks,
+      currentGameIndex: savedIndex,
+      currentTrack: savedTracks[savedIndex] || null,
       intentosTotales: '',
       intentos: localStorage.getItem('intentosEN') || 0,
       aciertos: '',
       audioPlayer: null,
       guess: '',
-      idCancion: localStorage.getItem('idCancion') || null,
-      currentSegment: localStorage.getItem('currentSegment') || 0,
-      durations: [1, 3, 5, 10, 30], // los segundos de cada segmento
-      totalDuration: 30, // los previews de Deezer son siempre de 30s
+      currentSegment: savedSegment,
+      durations: [1, 3, 5, 10, 30],
+      totalDuration: 30,
       volume: 0.5,
       message: '',
       historial: JSON.parse(localStorage.getItem('historialEN')) || [],
-      progress: 0,
+      progress: localStorage.getItem('progressEN') || 0,
       terminado: localStorage.getItem('terminadoEN') || 0,
       interval: null,
       modalFin: false,
       mostrarOpciones: false,
       mostrarCopiado: false,
       playlist: JSON.parse(localStorage.getItem('playlist')) || [],
+      version: localStorage.getItem('version') || null,
+      cargando: false,
     }
   },
   mounted() {
+    this.checkVersion()
     document.addEventListener('click', this.handleClickOutside)
     this.audioPlayer = this.$refs.audioPlayer
-    this.loadRandomTrack()
+    this.loadRandomTracks()
     this.fetchPlaylist()
   },
   unmounted() {
     document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
+    async checkVersion() {
+      try {
+        const response = await axios.get('/api/version')
+        if (this.version != response.data.version) {
+          this.version = response.data.version
+          localStorage.clear()
+          localStorage.setItem('version', this.version)
+          location.reload()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
     enterSeleccion() {
       if (this.opcionesFiltradas.length > 0) {
         this.adivinar(this.opcionesFiltradas[0])
@@ -225,11 +247,11 @@ export default {
         this.message = 'ganaste'
         this.modalFin = true
         this.terminado = 1
+
         localStorage.setItem('terminadoEN', 1)
         this.postIntento(1)
         this.historial.push('🟩')
         localStorage.setItem('historialEN', JSON.stringify(this.historial))
-
       } else {
         this.message = 'incorrecto'
         this.historial.push('🟥')
@@ -274,60 +296,95 @@ export default {
         }
       }
     },
-    async loadRandomTrack() {
-      this.currentTrack = null
+    async loadRandomTracks() {
+      this.cargando = true
+      // Si ya hay canciones en localStorage, las cargamos
+      if (this.tracksDelDia.length == 0) {
+        try {
+          const res = await axios.get('/api/random-tracks') // 🔥 ahora endpoint devuelve 3
+          this.tracksDelDia = res.data.tracks
+          this.intentosTotales = res.data.intentosTotalesEN
+          this.aciertos = res.data.aciertosEN
+          this.terminado = 0
+          this.startTimer(res.data.tiempoRestante)
+          localStorage.setItem('terminadoEN', 0)
+          localStorage.setItem('tracksDelDia', JSON.stringify(this.tracksDelDia))
+          localStorage.setItem('currentGameIndex', 0)
+          this.setCurrentTrack(0) // empieza en la primera canción
+        } catch (error) {
+          console.error('Error cargando tracks:', error)
+        } finally {
+          this.cargando = false
+        }
+      } else {
+        try {
+          const res = await axios.get('/api/random-tracks')
+          const sonIguales =
+            this.tracksDelDia.length === res.data.tracks.length &&
+            this.tracksDelDia.every((track, i) => track.id === res.data.tracks[i].id)
+          if (!sonIguales) {
+            this.terminado = 0
+            localStorage.setItem('terminadoEN', 0)
+            localStorage.setItem('currentGameIndex', 0)
+            this.setCurrentTrack(0) // empieza en la primera canción
+            localStorage.setItem('tracksDelDia', JSON.stringify(res.data.tracks))
+          }
+          this.tracksDelDia = res.data.tracks
+          this.setCurrentTrack(this.currentGameIndex)
+          this.intentosTotales = res.data.intentosTotalesEN
+          this.aciertos = res.data.aciertosEN
+          this.startTimer(res.data.tiempoRestante)
+        } catch (error) {
+        } finally {
+          this.cargando = false
+        }
+      }
+    },
+
+    async setCurrentTrack(index) {
+      this.currentGameIndex = index
+      this.currentTrack = this.tracksDelDia[index]
+      this.message = ''
+      this.historial = []
+      this.intentos = 0
+      localStorage.setItem('currentGameIndex', index)
+      this.loadPreview(this.currentTrack)
+    },
+
+    async loadPreview(track) {
+      if (!track || !track.preview) {
+        console.error('Track inválido o sin preview')
+        return
+      }
       try {
-        const res = await axios.get('/api/random-track')
-        const track = res.data
-
-        if (this.idCancion && track.id != this.idCancion) {
-          localStorage.removeItem('terminadoEN')
-          localStorage.removeItem('idCancion')
-          localStorage.removeItem('currentSegment')
-          localStorage.removeItem('intentosEN')
-          localStorage.removeItem('historialEN')
-          location.reload()
-          return
-        }
-
-        if (!track || !track.preview) {
-          console.error('Track inválido o sin preview')
-          return
-        }
-        this.idCancion = res.data.id
-        localStorage.setItem('idCancion', this.idCancion)
-        this.intentosTotales = res.data.intentosTotalesEN
-        this.aciertos = res.data.aciertosEN
-        this.startTimer(res.data.tiempoRestante)
-
-        this.currentTrack = track
-
-        await this.$nextTick()
-
-        if (this.audioPlayer) {
-          // Descargar como blob
-          const response = await fetch(track.preview)
-          const blob = await response.blob()
-          this.audioPlayer.src = URL.createObjectURL(blob)
-          this.audioPlayer.volume = this.volume
-          const startTime =
-            this.cumulativeDurations[this.currentSegment] - this.durations[this.currentSegment]
-
-          this.audioPlayer.currentTime = startTime
-          this.progress = startTime / this.totalDuration
-        }
+        const response = await fetch(track.preview)
+        const blob = await response.blob()
+        this.audioPlayer.src = URL.createObjectURL(blob)
+        this.audioPlayer.volume = this.volume
+        this.audioPlayer.currentTime = 0
       } catch (error) {
-        console.error('Error cargando track:', error)
+        console.error('Error cargando preview:', error)
+      }
+    },
+
+    async siguienteCancion() {
+      if (this.currentGameIndex < this.tracksDelDia.length - 1) {
+        await this.setCurrentTrack(this.currentGameIndex + 1)
+        this.currentSegment = 0
+        this.intentos = 0
+        this.historial = []
+        this.terminado = 0
+        localStorage.setItem('currentGameIndex', this.currentGameIndex)
+        localStorage.setItem('intentosEN', this.intentos)
+        localStorage.setItem('terminadoEN', 0)
+        localStorage.setItem('historialEN', JSON.stringify(this.historial))
+        localStorage.setItem('currentSegment', this.currentSegment)
+        this.progress = 0
+        localStorage.setItem('progressEN', this.progress)
       }
     },
 
     async playSegment() {
-      if (
-        !this.audioPlayer ||
-        !this.audioPlayer.src ||
-        this.currentSegment >= this.durations.length
-      )
-        return
       try {
         await this.audioPlayer.load() // fuerza carga
         await this.audioPlayer.play()
@@ -344,11 +401,11 @@ export default {
 
       clearInterval(this.interval)
       this.progress = startTime / this.totalDuration
+      localStorage.setItem('progressEN', this.progress)
 
       this.interval = setInterval(() => {
         const elapsed = this.audioPlayer.currentTime
         this.progress = Math.min(elapsed / this.totalDuration, endTime / this.totalDuration)
-
         if (elapsed >= endTime) {
           this.audioPlayer.pause()
           clearInterval(this.interval)
