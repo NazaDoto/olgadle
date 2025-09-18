@@ -13,12 +13,8 @@
             <div class="progress-fill" :style="{ width: progress * 100 + '%' }"></div>
 
             <!-- Líneas divisorias de segmentos -->
-            <div
-              v-for="(duration, index) in cumulativeDurations"
-              :key="index"
-              class="progress-marker"
-              :style="{ left: (duration / totalDuration) * 100 + '%' }"
-            ></div>
+            <div v-for="(duration, index) in cumulativeDurations" :key="index" class="progress-marker"
+              :style="{ left: (duration / totalDuration) * 100 + '%' }"></div>
           </div>
         </div>
 
@@ -29,11 +25,7 @@
             <label class="c-white">Volumen: {{ Math.round(volume * 100) }}%</label>
             <input type="range" min="0" max="1" step="0.01" v-model="volume" class="w-100 mt-2" />
           </div>
-          <button
-            @click="nextSegment"
-            :disabled="currentSegment >= durations.length"
-            class="btn-ok"
-          >
+          <button @click="nextSegment" :disabled="currentSegment >= durations.length" class="btn-ok">
             {{ currentSegment == durations.length - 1 ? '⏹' : '⏭' }}
           </button>
         </div>
@@ -44,29 +36,14 @@
         <div class="mb-4 mx-auto flex-col" style="max-width: 400px">
           <!-- Input y Autocomplete -->
           <div class="mb-4 position-relative" style="max-width: 400px">
-            <input
-              ref="inputTrack"
-              v-model="guess"
-              @input="mostrarOpciones = true"
-              @keyup.enter="enterSeleccion()"
-              type="text"
-              class="form-control input-size"
-              placeholder="Escribí el nombre de la canción..."
-            />
+            <input ref="inputTrack" v-model="guess" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion()"
+              type="text" class="form-control input-size" placeholder="Escribí el nombre de la canción..." />
 
             <!-- Autocomplete -->
-            <ul
-              v-if="mostrarOpciones && opcionesFiltradas.length"
-              ref="containerRef"
-              class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav"
-              style="z-index: 10"
-            >
-              <li
-                v-for="(opcion, index) in opcionesFiltradas"
-                :key="index"
-                @click="adivinar(opcion)"
-                class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-2 p-2"
-              >
+            <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
+              class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
+              <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+                class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-2 p-2">
                 {{ opcion.title }} - {{ opcion.artist }}
               </li>
             </ul>
@@ -306,11 +283,13 @@ export default {
           this.tracksDelDia = res.data.tracks
           this.intentosTotales = res.data.intentosTotalesEN
           this.aciertos = res.data.aciertosEN
+          this.currentSegment = 0
           this.terminado = 0
           this.startTimer(res.data.tiempoRestante)
           localStorage.setItem('terminadoEN', 0)
           localStorage.setItem('tracksDelDia', JSON.stringify(this.tracksDelDia))
           localStorage.setItem('currentGameIndex', 0)
+          localStorage.setItem('currentSegment', 0)
           this.setCurrentTrack(0) // empieza en la primera canción
         } catch (error) {
           console.error('Error cargando tracks:', error)
@@ -324,6 +303,8 @@ export default {
             this.tracksDelDia.length === res.data.tracks.length &&
             this.tracksDelDia.every((track, i) => track.id === res.data.tracks[i].id)
           if (!sonIguales) {
+            this.currentSegment = 0
+            localStorage.setItem('currentSegment', 0)
             this.terminado = 0
             localStorage.setItem('terminadoEN', 0)
             localStorage.setItem('currentGameIndex', 0)
