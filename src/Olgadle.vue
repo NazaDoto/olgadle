@@ -5,12 +5,8 @@
       <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">
         Era {{ integranteOculto.nombre }}
         <br />
-        <img
-          v-if="integranteOculto && integranteOculto.img"
-          :src="'/img/' + integranteOculto.img"
-          alt=""
-          class="square mt-2"
-        />
+        <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
+          class="square mt-2" />
       </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -56,30 +52,14 @@
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px">
-          <input
-            ref="inputIntegrante"
-            v-model="intento"
-            @input="mostrarOpciones = true"
-            @keyup.enter="enterSeleccion"
-            @keyup.esc="mostrarOpciones = false"
-            type="text"
-            class="form-control input-size"
-            placeholder="Escribí el nombre de algún integrante..."
-            :disabled="!(intentos > 0)"
-          />
+          <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
+            @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
+            placeholder="Escribí el nombre de algún integrante..." :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
-          <ul
-            v-if="mostrarOpciones && opcionesFiltradas.length"
-            ref="containerRef"
-            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav"
-            style="z-index: 10"
-          >
-            <li
-              v-for="(opcion, index) in opcionesFiltradas"
-              :key="index"
-              @click="adivinar(opcion)"
-              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3"
-            >
+          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
+            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
+            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
               <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square" />
               {{ opcion.nombre }}
             </li>
@@ -103,10 +83,8 @@
       <!-- Historial -->
       <div class="mx-auto" id="historialContainer">
         <!-- Encabezados de atributos -->
-        <div
-          v-if="historial.length > 0"
-          class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2"
-        >
+        <div v-if="historial.length > 0"
+          class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2">
           <div class="col-width">Integrante</div>
           <div class="col-width">Género</div>
           <div class="col-width">Programa</div>
@@ -117,60 +95,33 @@
         </div>
 
         <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto">
-          <li
-            v-for="item in historial"
-            :key="item.nombre"
-            class="list-group-item d-flex gap-1 bg-none w-744 mb-1"
-          >
+          <li v-for="item in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744 mb-1">
             <div class="square relative" v-show="item.img && item.mostrar.img">
               <div class="inset-shadow absolute-100 rounded"></div>
               <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
             </div>
 
-            <div
-              class="square padding-text"
-              :class="atributoColor(item, 'genero')"
-              v-show="item.mostrar.genero"
-            >
+            <div class="square padding-text" :class="atributoColor(item, 'genero')" v-show="item.mostrar.genero">
               {{ item.genero }}
             </div>
 
-            <div
-              class="square padding-text"
-              :class="atributoColor(item, 'programa')"
-              v-show="item.mostrar.programa"
-            >
+            <div class="square padding-text" :class="atributoColor(item, 'programa')" v-show="item.mostrar.programa">
               {{ item.programa.join(' / ') }}
             </div>
-            <div
-              class="square padding-text"
-              :class="atributoColor(item, 'rol')"
-              v-show="item.mostrar.rol"
-            >
+            <div class="square padding-text" :class="atributoColor(item, 'rol')" v-show="item.mostrar.rol">
               {{ item.rol }}
             </div>
 
-            <div
-              class="square padding-text"
-              :class="atributoColor(item, 'canta')"
-              v-show="item.mostrar.canta"
-            >
+            <div class="square padding-text" :class="atributoColor(item, 'canta')" v-show="item.mostrar.canta">
               {{ item.canta }}
             </div>
 
-            <div
-              class="square padding-text"
-              :class="atributoColor(item, 'hizo')"
-              v-show="item.mostrar.hizo"
-            >
+            <div class="square padding-text" :class="atributoColor(item, 'hizo')" v-show="item.mostrar.hizo">
               {{ item.hizo }}
             </div>
 
-            <div
-              class="square padding-text nacio-box"
-              :class="atributoColor(item, 'nacio')"
-              v-show="item.mostrar.nacio"
-            >
+            <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
+              v-show="item.mostrar.nacio">
               <!-- Flechita arriba -->
               <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">▲</span>
 
@@ -526,13 +477,16 @@ export default {
   color: rgba(255, 255, 255, 0.3);
   font-size: 10px;
 }
+
 .c-yellow {
   background-color: rgb(255, 212, 82) !important;
   color: black !important;
 }
+
 .c-yellow:hover {
   background-color: rgb(235, 190, 56) !important;
 }
+
 .flecha {
   font-size: 14px;
   font-weight: bold;
@@ -809,6 +763,9 @@ body {
 
 .w-744 {
   width: 744px;
+  align-items: start;
+  justify-content: start;
+  text-align: left;
 }
 
 .bg-none {
@@ -869,6 +826,7 @@ body {
 
 /* Tablets (≤ 992px) */
 @media (max-width: 992px) {
+
   .container,
   .container-lg,
   .container-md,
@@ -894,7 +852,7 @@ body {
 /* Pantallas medianas (≤ 768px) */
 @media (max-width: 768px) {
   .w-744 {
-    width: fit-content;
+    width: 635px;
   }
 
   .square {
@@ -937,7 +895,7 @@ body {
   }
 
   .w-744 {
-    width: fit-content;
+    width: 520px;
   }
 
   .col-width {
@@ -968,7 +926,7 @@ body {
   }
 
   .w-744 {
-    width: fit-content;
+    width: 480px;
   }
 
   .col-width {
@@ -1004,7 +962,7 @@ body {
   }
 
   .w-744 {
-    width: fit-content;
+    width: 380px;
   }
 
   .col-width {
@@ -1032,6 +990,7 @@ body {
 
 /* Teléfonos grandes (≤ 380px) */
 @media (max-width: 380px) {
+
   .adivina-container {
     padding: 5px 10px;
   }
@@ -1062,9 +1021,6 @@ body {
     font-size: 15px;
   }
 
-  .w-744 {
-    width: fit-content;
-  }
 
   .col-width {
     width: 50px;
@@ -1084,7 +1040,7 @@ body {
   .container-md,
   .container-sm {
     max-width: fit-content;
-    padding: 0;
+    padding: 0 5px;
     margin: auto;
   }
 }

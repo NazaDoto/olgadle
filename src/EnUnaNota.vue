@@ -290,6 +290,8 @@ export default {
           localStorage.setItem('tracksDelDia', JSON.stringify(this.tracksDelDia))
           localStorage.setItem('currentGameIndex', 0)
           localStorage.setItem('currentSegment', 0)
+          this.progress = 0
+          localStorage.setItem('progressEN', this.progress)
           this.setCurrentTrack(0) // empieza en la primera canción
         } catch (error) {
           console.error('Error cargando tracks:', error)
@@ -303,6 +305,8 @@ export default {
             this.tracksDelDia.length === res.data.tracks.length &&
             this.tracksDelDia.every((track, i) => track.id === res.data.tracks[i].id)
           if (!sonIguales) {
+            this.progress = 0
+            localStorage.setItem('progressEN', this.progress)
             this.currentSegment = 0
             localStorage.setItem('currentSegment', 0)
             this.terminado = 0

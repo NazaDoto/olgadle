@@ -5,12 +5,8 @@
       <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">
         Era {{ integranteOculto.nombre }}
         <br />
-        <img
-          v-if="integranteOculto && integranteOculto.img"
-          :src="'/img/' + integranteOculto.img"
-          alt=""
-          class="square mt-2"
-        />
+        <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
+          class="square mt-2" />
       </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -42,39 +38,19 @@
     <span v-else>
       <span v-if="terminado == 0">
         <div class="img-wrapper" v-if="integranteOculto && integranteOculto.nombre">
-          <img
-            :src="'/img/' + integranteOculto.img"
-            :class="'img-oculta ' + estiloImagen[5 - intentos]"
-            alt=""
-          />
+          <img :src="'/img/' + integranteOculto.img" :class="'img-oculta ' + estiloImagen[5 - intentos]" alt="" />
         </div>
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px">
-          <input
-            ref="inputIntegrante"
-            v-model="intento"
-            @input="mostrarOpciones = true"
-            @keyup.enter="enterSeleccion"
-            @keyup.esc="mostrarOpciones = false"
-            type="text"
-            class="form-control input-size"
-            placeholder="Escribí el nombre de algún integrante..."
-            :disabled="!(intentos > 0)"
-          />
+          <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
+            @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
+            placeholder="Escribí el nombre de algún integrante..." :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
-          <ul
-            v-if="mostrarOpciones && opcionesFiltradas.length"
-            ref="containerRef"
-            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav"
-            style="z-index: 10"
-          >
-            <li
-              v-for="(opcion, index) in opcionesFiltradas"
-              :key="index"
-              @click="adivinar(opcion)"
-              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3"
-            >
+          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
+            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
+            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
               <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square" />
               {{ opcion.nombre }}
             </li>
@@ -93,12 +69,8 @@
           El integrante oculto era: {{ integranteOculto.nombre }}
           <br />
           <div class="img-wrapper mt-2 mb-2">
-            <img
-              v-if="integranteOculto && integranteOculto.img"
-              :src="'/img/' + integranteOculto.img"
-              alt=""
-              class="img-5 mt-2 mb-2"
-            />
+            <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
+              class="img-5 mt-2 mb-2" />
           </div>
         </div>
         <span v-if="terminado != -1">
@@ -110,16 +82,10 @@
       <!-- Historial -->
       <div class="mx-auto" id="historialContainer">
         <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto flex-col-intento">
-          <li
-            v-for="item in historial"
-            :key="item.nombre"
-            class="flex-col-li"
-            :class="
-              item.nombre === integranteOculto?.nombre
-                ? 'bg-success text-white p-1 rounded'
-                : 'bg-danger text-white p-1 rounded'
-            "
-          >
+          <li v-for="item in historial" :key="item.nombre" class="flex-col-li" :class="item.nombre === integranteOculto?.nombre
+              ? 'bg-success text-white p-1 rounded'
+              : 'bg-danger text-white p-1 rounded'
+            ">
             <div class="square relative" v-show="item.img">
               <div class="inset-shadow absolute-100 rounded"></div>
               <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
@@ -235,7 +201,6 @@ export default {
         this.aciertos = response.data.aciertosQE
         this.startTimer(response.data.tiempoRestante)
         if (
-          localStorage.getItem('integranteQE') &&
           localStorage.getItem('integranteQE') != response.data.integrante
         ) {
           localStorage.removeItem('integranteQE')
@@ -369,6 +334,7 @@ export default {
   justify-content: center;
   gap: 10px;
 }
+
 .flex-col-li {
   display: flex;
   flex-direction: column;
@@ -376,30 +342,41 @@ export default {
   align-items: center;
   margin: auto;
 }
+
 .correcto {
-  background-color: #4caf50; /* Verde */
+  background-color: #4caf50;
+  /* Verde */
   color: white;
 }
+
 .incorrecto {
-  background-color: #f44336; /* Rojo */
+  background-color: #f44336;
+  /* Rojo */
   color: white;
 }
+
 .img-wrapper {
   width: 150px;
   height: 150px;
   border-radius: 20px;
-  overflow: hidden; /* recorta lo que se sale */
+  overflow: hidden;
+  /* recorta lo que se sale */
   margin: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 .img-oculta {
   position: relative;
-  object-fit: cover; /* recorte centrado */
-  object-position: center; /* mantener centrado */
+  object-fit: cover;
+  /* recorte centrado */
+  object-position: center;
+  /* mantener centrado */
   /* evitar selección y arrastre */
   user-select: none;
   -webkit-user-drag: none;
-} /* Niveles */
+}
+
+/* Niveles */
 .img-0 {
   top: -150%;
   left: -150%;
