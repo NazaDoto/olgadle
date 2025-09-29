@@ -261,6 +261,7 @@ export default {
       })
     },
     async fetchIntegrante() {
+      this.cargando = true;
       try {
         const response = await axios.get('/integrante')
         this.integranteOculto = this.integrantes[response.data.integrante]
