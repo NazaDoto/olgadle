@@ -83,8 +83,8 @@
       <div class="mx-auto" id="historialContainer">
         <ul v-show="historial.length > 0" class="list-group w-fit-content mx-auto flex-col-intento">
           <li v-for="item in historial" :key="item.nombre" class="flex-col-li" :class="item.nombre === integranteOculto?.nombre
-              ? 'bg-success text-white p-1 rounded'
-              : 'bg-danger text-white p-1 rounded'
+            ? 'bg-success text-white p-1 rounded'
+            : 'bg-danger text-white p-1 rounded'
             ">
             <div class="square relative" v-show="item.img">
               <div class="inset-shadow absolute-100 rounded"></div>
@@ -194,6 +194,7 @@ export default {
       })
     },
     async fetchIntegranteQE() {
+      this.cargando = true;
       try {
         const response = await axios.get('/integranteQE')
         this.integranteOculto = this.integrantes[response.data.integrante]

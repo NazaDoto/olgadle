@@ -223,6 +223,7 @@ export default {
       this.mostrarOpciones = false
       this.intentos++
       localStorage.setItem('intentosEN', this.intentos)
+
       if (track.id === this.currentTrack.id) {
         this.message = 'ganaste'
         this.modalFin = true
@@ -232,6 +233,20 @@ export default {
         this.postIntento(1)
         this.historial.push('🟩')
         localStorage.setItem('historialEN', JSON.stringify(this.historial))
+
+        // 🔥 Reproducir la canción completa desde el inicio
+        if (this.audioPlayer) {
+          this.audioPlayer.pause()
+          this.audioPlayer.currentTime = 0
+          this.progress = 0
+          localStorage.setItem('progressEN', this.progress)
+          try {
+            await this.audioPlayer.play()
+          } catch (err) {
+            console.error("No se pudo reproducir el audio completo:", err)
+          }
+        }
+
       } else {
         this.message = 'incorrecto'
         this.historial.push('🟥')
@@ -244,7 +259,8 @@ export default {
         this.playlist.splice(index, 1)
       }
       this.guess = ''
-    },
+    }
+    ,
     compartirResultado() {
       const intentosUsados = this.currentSegment
 
@@ -334,7 +350,7 @@ export default {
       this.historial = []
       this.intentos = 0
       localStorage.setItem('currentGameIndex', index)
-      this.loadPreview(this.currentTrack)
+      await this.loadPreview(this.currentTrack)
     },
 
     async loadPreview(track) {
@@ -354,19 +370,27 @@ export default {
     },
 
     async siguienteCancion() {
-      if (this.currentGameIndex < this.tracksDelDia.length - 1) {
-        await this.setCurrentTrack(this.currentGameIndex + 1)
-        this.currentSegment = 0
-        this.intentos = 0
-        this.historial = []
-        this.terminado = 0
-        localStorage.setItem('currentGameIndex', this.currentGameIndex)
-        localStorage.setItem('intentosEN', this.intentos)
-        localStorage.setItem('terminadoEN', 0)
-        localStorage.setItem('historialEN', JSON.stringify(this.historial))
-        localStorage.setItem('currentSegment', this.currentSegment)
-        this.progress = 0
-        localStorage.setItem('progressEN', this.progress)
+      this.cargando = true;
+      try {
+
+        if (this.currentGameIndex < this.tracksDelDia.length - 1) {
+          await this.setCurrentTrack(this.currentGameIndex + 1)
+          this.currentSegment = 0
+          this.intentos = 0
+          this.historial = []
+          this.terminado = 0
+          localStorage.setItem('currentGameIndex', this.currentGameIndex)
+          localStorage.setItem('intentosEN', this.intentos)
+          localStorage.setItem('terminadoEN', 0)
+          localStorage.setItem('historialEN', JSON.stringify(this.historial))
+          localStorage.setItem('currentSegment', this.currentSegment)
+          this.progress = 0
+          localStorage.setItem('progressEN', this.progress)
+        }
+      } catch (e) {
+        console.log('Error: ', e)
+      } finally {
+        this.cargando = false;
       }
     },
 

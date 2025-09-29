@@ -190,7 +190,7 @@ let integrantes = [{
     nombre: 'Fer Otero',
     genero: 'Femenino',
     programa: ['EFDM'],
-    rol: 'Columnista',
+    rol: 'Conductor',
     canta: 'No',
     hizo: 'IG/TikTok',
     nacio: '1987',
