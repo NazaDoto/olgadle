@@ -211,12 +211,15 @@ export default {
     },
     async fetchIntegrantes() {
       if (this.integrantes.length > 0) return
+      this.cargando = true;
       try {
         const response = await axios.get('/integrantes')
         this.integrantes = await response.data
         localStorage.setItem('integrantes', JSON.stringify(this.integrantes))
       } catch (error) {
         console.error('Error fetching integrantes:', error)
+      } finally {
+        this.cargando = false;
       }
     },
     compartirResultado() {

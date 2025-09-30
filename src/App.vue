@@ -32,11 +32,11 @@
     </div>
 
   </div>
-  <router-link v-else to="/" class="boton-container btn-volver">
-    <span class="text-boton"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="15 18 9 12 15 6"></polyline>
-    </svg></span>
+  <router-link v-else to="/" class="boton-container btn-volver square-34">
+    <span class="text-boton"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg></span>
   </router-link>
   <router-view />
 </template>
@@ -46,6 +46,14 @@
 </script>
 
 <style scoped>
+.square-34 {
+  display: flex;
+  width: 34px;
+  justify-content: center;
+  align-items: center;
+  height: 34px;
+}
+
 .btn-volver {
   position: sticky;
   top: 5px;

@@ -549,7 +549,7 @@ let integrantes = [{
     img: 'toto.jpg',
     nombre: 'Toto Kirzner',
     genero: 'Masculino',
-    programa: ['Mi Primo Es Así', 'EFDM'],
+    programa: ['Mi Primo Es Así', 'EFDM', 'Faltan Varones'],
     rol: 'Conductor',
     canta: 'No',
     hizo: 'Actuación',
