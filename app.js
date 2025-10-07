@@ -9,7 +9,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-let version = 0.1
+let version = 0.2
 // Variables para el integrante oculto y control de tiempo
 let integranteIndex = null
 let ultimaAsignacion = null

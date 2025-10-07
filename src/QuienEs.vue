@@ -158,6 +158,12 @@ export default {
   },
 
   methods: {
+    async restart() {
+      this.historial = [];
+      this.intentos = 5;
+      this.terminado = 0;
+      this.fetchIntegranteQE();
+    },
     async checkVersion() {
       try {
         const response = await axios.get('/api/version')
@@ -197,18 +203,18 @@ export default {
       this.cargando = true;
       try {
         const response = await axios.get('/integranteQE')
-        this.integranteOculto = this.integrantes[response.data.integrante]
-        this.intentosTotales = response.data.intentosTotalesQE
-        this.aciertos = response.data.aciertosQE
-        this.startTimer(response.data.tiempoRestante)
-        if (
-          localStorage.getItem('integranteQE') != response.data.integrante
-        ) {
+
+        if (localStorage.getItem('integranteQE') && localStorage.getItem('integranteQE') != response.data.integrante) {
           localStorage.removeItem('integranteQE')
           localStorage.removeItem('terminadoQE')
           localStorage.removeItem('historialQE')
           localStorage.removeItem('intentosQE')
-          location.reload()
+          await this.restart();
+        } else {
+          this.integranteOculto = this.integrantes[response.data.integrante]
+          this.intentosTotales = response.data.intentosTotalesQE
+          this.aciertos = response.data.aciertosQE
+          this.startTimer(response.data.tiempoRestante)
         }
         localStorage.setItem('integranteQE', response.data.integrante)
       } catch (error) {
@@ -305,20 +311,23 @@ export default {
     },
     async fetchIntegrantes() {
       if (this.integrantes.length > 0) return
+      this.cargando = true;
       try {
         const response = await axios.get('/integrantes')
         this.integrantes = await response.data
         localStorage.setItem('integrantes', JSON.stringify(this.integrantes))
       } catch (error) {
         console.error('Error fetching integrantes:', error)
+      } finally {
+        this.cargando = false
       }
     },
   },
-  mounted() {
+  async mounted() {
+    this.checkVersion()
     document.addEventListener('click', this.handleClickOutside)
     this.fetchIntegrantes()
-    this.fetchIntegranteQE()
-    this.checkVersion()
+    await this.fetchIntegranteQE()
   },
   unmounted() {
     document.removeEventListener('click', this.handleClickOutside)

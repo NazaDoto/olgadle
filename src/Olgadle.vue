@@ -123,13 +123,15 @@
             <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
               v-show="item.mostrar.nacio">
               <!-- Flechita arriba -->
-              <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">▲</span>
+              <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">{{ integranteOculto.nacio ==
+                'No sé' ? '-' : '▲' }}</span>
 
               <!-- Año de nacimiento -->
               <div class="nacio-text">{{ item.nacio }}</div>
 
               <!-- Flechita abajo -->
-              <span v-if="item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">▼</span>
+              <span v-if="item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">{{ integranteOculto.nacio ==
+                'No sé' ? '-' : '▼' }}</span>
             </div>
           </li>
         </ul>
@@ -196,6 +198,12 @@ export default {
   },
 
   methods: {
+    async reset() {
+      this.historial = [];
+      this.intentos = 7;
+      this.terminado = 0;
+      this.fetchIntegrante();
+    },
     async checkVersion() {
       try {
         const response = await axios.get('/api/version')
@@ -279,7 +287,7 @@ export default {
           localStorage.removeItem('terminado')
           localStorage.removeItem('historial')
           localStorage.removeItem('intentos')
-          location.reload()
+          this.reset();
         }
         localStorage.setItem('integranteOculto', response.data.integrante)
       } catch (error) {
