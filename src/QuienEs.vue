@@ -47,11 +47,10 @@
             @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
             placeholder="Escribí el nombre de algún integrante..." :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
-          <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
-            class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
+          <ul v-if="mostrarOpciones && opcionesFiltradas.length && intento != ''" ref="containerRef"
+            class="list-group position-absolute w-100 select-integrantes max-h-150 mt-1 barra-nav" style="z-index: 10">
             <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
-              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
-              <img v-if="opcion.img" :src="'/img/' + opcion.img" alt="foto" class="img-square" />
+              class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3 h-50px">
               {{ opcion.nombre }}
             </li>
           </ul>
@@ -345,6 +344,10 @@ export default {
   gap: 10px;
 }
 
+.max-h-150 {
+  max-height: 130px;
+}
+
 .flex-col-li {
   display: flex;
   flex-direction: column;
@@ -357,6 +360,10 @@ export default {
   background-color: #4caf50;
   /* Verde */
   color: white;
+}
+
+.h-50px {
+  padding: 10px;
 }
 
 .incorrecto {
