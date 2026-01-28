@@ -93,7 +93,8 @@
           <div class="headerModal">🎉 ¡Ganaste!</div>
           <div class="bodyModal">
             Lo lograste en el
-            {{ intentos + 'º intento. ' + '(' + (intentosUsados == 1 ? '1 skip' : intentosUsados + ' skips') + ')' }}
+            {{ intentos + 'º intento. ' + '(' + (this.currentSegment == 1 ? '1 skip' : this.currentSegment + ' skips') +
+            ')' }}
           </div>
           <div class="bodyModal">
             La canción era: {{ currentTrack.title + ' - ' + currentTrack.artist }}
