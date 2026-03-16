@@ -87,7 +87,7 @@
           class="d-flex flex-row gap-1 text-center align-items-center w-744 mx-auto fs-small c-white mb-2">
           <div class="col-width">Integrante</div>
           <div class="col-width">Género</div>
-          <div class="col-width">Programa</div>
+          <div class="col-width">Programas</div>
           <div class="col-width">Rol</div>
           <div class="col-width">¿Canta?</div>
           <div class="col-width">Hizo</div>
@@ -105,8 +105,8 @@
               {{ item.genero }}
             </div>
 
-            <div class="square padding-text" :class="atributoColor(item, 'programa')" v-show="item.mostrar.programa">
-              {{ item.programa.join(' / ') }}
+            <div class="square padding-text" :class="atributoColor(item, 'programas')" v-show="item.mostrar.programas">
+              {{ item.programas.join(' / ') }}
             </div>
             <div class="square padding-text" :class="atributoColor(item, 'rol')" v-show="item.mostrar.rol">
               {{ item.rol }}
@@ -241,7 +241,7 @@ export default {
         let fila = ''
 
         // Recorremos atributos importantes
-        const atributos = ['genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
+        const atributos = ['genero', 'programas', 'rol', 'canta', 'hizo', 'nacio']
         atributos.forEach((attr) => {
           const valorOculto = this.integranteOculto[attr]
 
@@ -297,7 +297,7 @@ export default {
       }
     },
     revelarAtributos(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
+      const atributos = ['img', 'genero', 'programas', 'rol', 'canta', 'hizo', 'nacio']
 
       atributos.forEach((attr, index) => {
         setTimeout(() => {
@@ -333,7 +333,7 @@ export default {
       }
     },
     revelarAtributosSinIntento(item) {
-      const atributos = ['img', 'genero', 'programa', 'rol', 'canta', 'hizo', 'nacio']
+      const atributos = ['img', 'genero', 'programas', 'rol', 'canta', 'hizo', 'nacio']
 
       atributos.forEach((attr, index) => {
         setTimeout(() => {
@@ -376,7 +376,6 @@ export default {
       }, 1000)
     },
     async adivinar(integrante) {
-      console.log(integrante)
       this.$refs.inputIntegrante.placeholder = 'Verificando...'
       this.$refs.inputIntegrante.disabled = true
 
@@ -394,7 +393,7 @@ export default {
           rol: false,
           canta: false,
           hizo: false,
-          programa: false,
+          programas: false,
           nacio: false,
         },
       }
@@ -434,7 +433,7 @@ export default {
       }
 
       if (item[atributo] === valorOculto) return 'bg-success text-white p-1 rounded'
-      if (atributo === 'rol' || atributo === 'programa') {
+      if (atributo === 'rol' || atributo === 'programas') {
         if (Array.isArray(valorOculto) && valorOculto.includes(item[atributo]))
           return 'bg-warning text-dark p-1 rounded'
       }

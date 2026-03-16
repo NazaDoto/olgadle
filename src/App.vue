@@ -111,10 +111,11 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+  background-color:#b8a6a4;
   background-image:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
     url('/bg.jpg');
-  background-size: cover;
+  background-size:cover;
   background-position: center;
   background-repeat: no-repeat;
 }
