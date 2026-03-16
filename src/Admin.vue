@@ -39,12 +39,8 @@
             <!-- CABECERA -->
 
             <div class="d-flex align-items-center mb-3">
-              <img
-                v-if="i.img"
-                :src="'http://localhost:3501/uploads/' + i.img"
-                class="rounded me-3"
-                style="width: 70px; height: 70px; object-fit: cover"
-              />
+              <img v-if="i.img" :src="'http://localhost:3501/uploads/' + i.img" class="rounded me-3"
+                style="width: 70px; height: 70px; object-fit: cover" />
 
               <div class="flex-grow-1">
                 <input v-model="i.nombre" class="form-control fw-semibold mb-1" />
@@ -107,52 +103,34 @@
             </div>
 
             <!-- seleccionar existente -->
+            <div>
 
-            <select
-              v-model="i.nuevoPrograma"
-              class="form-select form-select-sm mb-2"
-              @change="agregarPrograma(i)"
-            >
-              <option disabled value="">Agregar programa existente</option>
+              <select v-model="i.nuevoPrograma" class="form-select form-select-sm mb-2" @change="agregarPrograma(i)">
+                <option disabled value="">Agregar programa existente</option>
 
-              <option v-for="p in programas" :key="p.id" :value="p.id">
-                {{ p.nombre }}
-              </option>
-            </select>
+                <option v-for="p in programas" :key="p.id" :value="p.id">
+                  {{ p.nombre }}
+                </option>
+              </select>
 
-            <!-- crear nuevo -->
+              <!-- crear nuevo -->
 
-            <div class="input-group input-group-sm">
-              <input
-                v-model="i.programaNuevoNombre"
-                class="form-control"
-                placeholder="Crear programa nuevo"
-              />
+              <div class="input-group input-group-sm">
+                <input v-model="i.programaNuevoNombre" class="form-control" placeholder="Crear programa nuevo" />
 
-              <button class="btn btn-success" @click="crearPrograma(i)">Crear</button>
+                <button class="btn btn-success" @click="crearPrograma(i)">Crear</button>
+              </div>
             </div>
 
             <hr />
 
             <!-- IMAGEN -->
 
-            <div
-              class="border rounded p-2 text-center mb-3"
-              @dragover.prevent
-              @drop="dropImagen($event, i)"
-            >
-              <input
-                type="file"
-                class="form-control form-control-sm mb-2"
-                @change="subirImagen($event, i)"
-              />
+            <div class="border rounded p-2 text-center mb-3" @dragover.prevent @drop="dropImagen($event, i)">
+              <input type="file" class="form-control form-control-sm mb-2" @change="subirImagen($event, i)" />
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Ctrl+V para pegar imagen"
-                @paste="pegarImagen($event, i)"
-              />
+              <input type="text" class="form-control form-control-sm" placeholder="Ctrl+V para pegar imagen"
+                @paste="pegarImagen($event, i)" />
             </div>
 
             <!-- ACCIONES -->
@@ -229,49 +207,39 @@
               <span class="ms-1" style="cursor: pointer" @click="quitarProgramaNuevo(p)"> ✖ </span>
             </span>
           </div>
+          <div class="d-flex flex-row gap-2">
 
-          <select
-          v-model="nuevo.nuevoPrograma"
-          class="form-select form-select-sm mb-2"
-          @change="agregarProgramaNuevo"
-          >
-          <option disabled value="">Agregar programa existente</option>
+            <select v-model="nuevo.nuevoPrograma" class="d-flex form-select form-select-sm"
+              @change="agregarProgramaNuevo">
+              <option disabled value="">Agregar programa existente</option>
 
-          <option v-for="p in programas" :key="p.id" :value="p.nombre">
-            {{ p.nombre }}
-          </option>
-        </select>
+              <option v-for="p in programas" :key="p.id" :value="p.nombre">
+                {{ p.nombre }}
+              </option>
+            </select>
 
-        <div class="input-group input-group-sm">
-          <input
-          v-model="nuevo.programaNuevoNombre"
-          class="form-control"
-          placeholder="Crear programa nuevo"
-          />
+            <div class="input-group input-group-sm">
+              <input v-model="nuevo.programaNuevoNombre" class="d-flex form-control"
+                placeholder="Crear programa nuevo" />
 
-          <button class="btn btn-success" @click="crearProgramaNuevo">Crear</button>
+              <button class="btn btn-success" @click="crearProgramaNuevo">Crear</button>
+            </div>
+          </div>
+
+          <label class="fw-semibold small mb-2">Imagen</label>
+
+          <div class="border rounded p-2 text-center " @dragover.prevent @drop="dropImagenNuevo">
+            <img v-if="nuevo.img" :src="'http://localhost:3501/uploads/' + nuevo.img" class="img-fluid mb-2"
+              style="max-height: 120px" />
+            <div class="d-flex flex-row gap-2 mt-2">
+
+              <input type="file" class="form-control form-control-sm mb-2" @change="subirImagenNuevo" />
+
+              <input type="text" class="form-control form-control-sm" placeholder="Ctrl+V para pegar imagen"
+                @paste="pegarImagenNuevo" />
+            </div>
+          </div>
         </div>
-
-        <label class="fw-semibold small mb-2">Imagen</label>
-
-        <div class="border rounded p-2 text-center mb-3" @dragover.prevent @drop="dropImagenNuevo">
-          <img
-          v-if="nuevo.img"
-          :src="'http://localhost:3501/uploads/' + nuevo.img"
-          class="img-fluid mb-2"
-          style="max-height: 120px"
-          />
-
-          <input type="file" class="form-control form-control-sm mb-2" @change="subirImagenNuevo" />
-
-          <input
-          type="text"
-          class="form-control form-control-sm"
-          placeholder="Ctrl+V para pegar imagen"
-          @paste="pegarImagenNuevo"
-          />
-        </div>
-      </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="showModalNuevo = false">Cancelar</button>
 
@@ -451,24 +419,6 @@ export default {
       this.cargarProgramas()
     },
 
-    async crearIntegrante() {
-      await axios.post('/integrantes', this.nuevo)
-
-      this.cargarIntegrantes()
-
-      this.nuevo = {
-        nombre: '',
-        genero: 'Masculino',
-        rol: 'Producción',
-        canta: 'No',
-        hizo: '',
-        nacio: '',
-      }
-
-      const modal = bootstrap.Modal.getInstance(document.getElementById('modalIntegrante'))
-
-      modal.hide()
-    },
 
     async quitarPrograma(integrante, programa) {
       await axios.post('/quitar-programa', {
@@ -591,6 +541,7 @@ export default {
   align-items: center;
   justify-content: center;
 
+
   z-index: 9999;
 }
 
@@ -608,6 +559,7 @@ export default {
     0 2px 6px rgba(0, 0, 0, 0.1);
 
   animation: modalFade 0.25s ease;
+
 }
 
 .modalNuevo .modal-header {
@@ -619,12 +571,13 @@ export default {
 }
 
 .modalNuevo .modal-body {
-  padding: 22px;
+  padding: 5px 22px 5px 22px;
+  overflow: auto;
 }
 
 .modalNuevo .modal-footer {
   border-top: 1px solid #eee;
-  padding: 16px 22px;
+  padding: 5px 16px;
 }
 
 .modalNuevo input,

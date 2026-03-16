@@ -5,8 +5,8 @@
       <div class="bodyModal" v-if="integranteOculto && integranteOculto.nombre">
         Era {{ integranteOculto.nombre }}
         <br />
-        <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
-          class="square mt-2" />
+        <img v-if="integranteOculto && integranteOculto.img"
+          :src="'https://nazadoto.com:3501/uploads/' + integranteOculto.img" alt="" class="square mt-2" />
       </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -38,7 +38,8 @@
     <span v-else>
       <span v-if="terminado == 0">
         <div class="img-wrapper" v-if="integranteOculto && integranteOculto.nombre">
-          <img :src="'/img/' + integranteOculto.img" :class="'img-oculta ' + estiloImagen[5 - intentos]" alt="" />
+          <img :src="'https://nazadoto.com:3501/uploads/' + integranteOculto.img"
+            :class="'img-oculta ' + estiloImagen[5 - intentos]" alt="" />
         </div>
         <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
         <!-- Input y Autocomplete -->
@@ -68,8 +69,8 @@
           El integrante oculto era: {{ integranteOculto.nombre }}
           <br />
           <div class="img-wrapper mt-2 mb-2">
-            <img v-if="integranteOculto && integranteOculto.img" :src="'/img/' + integranteOculto.img" alt=""
-              class="img-5 mt-2 mb-2" />
+            <img v-if="integranteOculto && integranteOculto.img"
+              :src="'https://nazadoto.com:3501/uploads/' + integranteOculto.img" alt="" class="img-5 mt-2 mb-2" />
           </div>
         </div>
         <span v-if="terminado != -1">
@@ -87,7 +88,7 @@
             ">
             <div class="square relative" v-show="item.img">
               <div class="inset-shadow absolute-100 rounded"></div>
-              <img class="rounded" width="100%" height="100%" :src="'/img/' + item.img" />
+              <img class="rounded" width="100%" height="100%" :src="'https://nazadoto.com:3501/uploads/' + item.img" />
             </div>
 
             <div class="padding-text" v-show="item.nombre">
