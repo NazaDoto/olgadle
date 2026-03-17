@@ -310,7 +310,7 @@ export default {
       }
     },
     async fetchIntegrantes() {
-      if (this.integrantes.length > 0) return
+
       this.cargando = true;
       try {
         const response = await axios.get('/integrantes')
