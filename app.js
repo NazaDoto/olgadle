@@ -6,15 +6,12 @@ import fetch from 'node-fetch'
 import http from 'http'
 import mysql from 'mysql2/promise'
 
-import multer from "multer"
-import sharp from "sharp"
-import path from "path"
+import multer from 'multer'
+import sharp from 'sharp'
+import path from 'path'
 import { debug } from 'console'
 
-const upload = multer({ dest: "temp/" })
-
-
-
+const upload = multer({ dest: 'temp/' })
 
 const ENV = 'prod'
 
@@ -32,50 +29,38 @@ const app = express()
 const USER = 'admin'
 const PASSWORD = 'olgadle@4pp'
 
-app.use("/uploads", express.static("uploads"))
+app.use('/uploads', express.static('uploads'))
 app.use(express.json())
 app.use(cors())
 
-app.post("/upload", upload.single("imagen"), async (req, res) => {
+app.post('/upload', upload.single('imagen'), async(req, res) => {
+    const nombre = req.body.nombre || 'integrante'
 
-    const nombre = req.body.nombre || "integrante"
+    const fileName = nombre.replace(/\s+/g, '_').toLowerCase() + '.jpg'
 
-    const fileName =
-        nombre
-            .replace(/\s+/g, "_")
-            .toLowerCase() +
-        ".jpg"
+    const outputPath = 'uploads/' + fileName
 
-    const outputPath = "uploads/" + fileName
-
-    await sharp(req.file.path)
-        .resize(400)
-        .jpeg({ quality: 80 })
-        .toFile(outputPath)
+    await sharp(req.file.path).resize(400).jpeg({ quality: 80 }).toFile(outputPath)
 
     fs.unlinkSync(req.file.path)
 
     res.json({
-        url: fileName
+        url: fileName,
     })
-
 })
-app.post("/delete-image", (req, res) => {
-
+app.post('/delete-image', (req, res) => {
     const { img } = req.body
 
     if (!img) return res.json({ ok: true })
 
-    const filePath = "." + img
+    const filePath = '.' + img
 
     if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath)
     }
 
     res.json({ ok: true })
-
 })
-
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body
@@ -88,7 +73,7 @@ app.post('/login', (req, res) => {
 })
 
 let version = 0.5
-// Variables para el integrante oculto y control de tiempo
+    // Variables para el integrante oculto y control de tiempo
 let integranteIndex = null
 let ultimaAsignacion = null
 const INTERVALO_MS = 12 * 60 * 60 * 1000 // 12 horas
@@ -186,7 +171,7 @@ async function fetchPlaylist(force = false) {
 
 // Endpoint integrante
 
-app.get('/integrante', async (req, res) => {
+app.get('/integrante', async(req, res) => {
     await verificarTiming()
 
     const tiempoRestante = INTERVALO_MS - (Date.now() - ultimaAsignacion)
@@ -199,7 +184,7 @@ app.get('/integrante', async (req, res) => {
     })
 })
 
-app.get('/integranteQE', async (req, res) => {
+app.get('/integranteQE', async(req, res) => {
     await verificarTiming()
 
     const tiempoRestante = INTERVALO_MS - (Date.now() - ultimaAsignacion)
@@ -211,7 +196,6 @@ app.get('/integranteQE', async (req, res) => {
         aciertosQE,
     })
 })
-
 
 // Endpoint intento
 app.post('/intento', (req, res) => {
@@ -240,7 +224,7 @@ app.post('/intentoQE', (req, res) => {
 })
 
 // Endpoint playlist simplificada
-app.get('/api/playlist', async (req, res) => {
+app.get('/api/playlist', async(req, res) => {
     const data = await fetchPlaylist()
     if (!data || !data.tracks || !data.tracks.data) {
         return res.status(404).json({ error: 'No se encontraron canciones' })
@@ -255,11 +239,11 @@ app.get('/api/playlist', async (req, res) => {
     res.json(simplifiedTracks)
 })
 app.get('/api/version', (req, res) => {
-    res.json({ version })
-})
-// Endpoint random-track (usa siempre la canción actual)
-// Endpoint random-tracks (usa siempre las 3 canciones actuales)
-app.get('/api/random-tracks', async (req, res) => {
+        res.json({ version })
+    })
+    // Endpoint random-track (usa siempre la canción actual)
+    // Endpoint random-tracks (usa siempre las 3 canciones actuales)
+app.get('/api/random-tracks', async(req, res) => {
     try {
         await verificarTiming()
         if (!cancionesActuales || cancionesActuales.length === 0) {
@@ -301,7 +285,7 @@ app.get('/api/random-tracks', async (req, res) => {
     }
 })
 
-app.get('/integrantes', async (req, res) => {
+app.get('/integrantes', async(req, res) => {
     const [rows] = await db.query(`
 SELECT 
 i.*,
@@ -322,63 +306,43 @@ GROUP BY i.id
     res.json(data)
 })
 
-app.get('/programas', async (req, res) => {
+app.get('/programas', async(req, res) => {
     const [rows] = await db.query('SELECT * FROM programas')
 
     res.json(rows)
 })
-app.post('/programas', async (req, res) => {
-
+app.post('/programas', async(req, res) => {
     const { nombre } = req.body
 
-    const [result] = await db.query(
-        'INSERT INTO programas(nombre) VALUES (?)', [nombre]
-    )
+    const [result] = await db.query('INSERT INTO programas(nombre) VALUES (?)', [nombre])
 
     res.json({
-        id: result.insertId
+        id: result.insertId,
     })
-
 })
-app.delete('/integrantes/:id', async (req, res) => {
-
+app.delete('/integrantes/:id', async(req, res) => {
     const id = req.params.id
 
     try {
-
         // primero borrar relaciones con programas
-        await db.query(
-            'DELETE FROM integrante_programa WHERE id_integrante = ?',
-            [id]
-        )
+        await db.query('DELETE FROM integrante_programa WHERE id_integrante = ?', [id])
 
         // luego borrar integrante
-        await db.query(
-            'DELETE FROM integrantes WHERE id = ?',
-            [id]
-        )
+        await db.query('DELETE FROM integrantes WHERE id = ?', [id])
 
         res.json({ ok: true })
-
     } catch (err) {
-
         console.error(err)
         res.status(500).json({ error: 'Error al eliminar integrante' })
-
     }
-
 })
 
-app.post('/quitar-programa', async (req, res) => {
-
+app.post('/quitar-programa', async(req, res) => {
     const { id_integrante, programa } = req.body
 
     try {
-
         // buscar id del programa por nombre
-        const [prog] = await db.query(
-            'SELECT id FROM programas WHERE nombre = ?', [programa]
-        )
+        const [prog] = await db.query('SELECT id FROM programas WHERE nombre = ?', [programa])
 
         if (prog.length === 0) {
             return res.status(404).json({ error: 'Programa no encontrado' })
@@ -387,22 +351,19 @@ app.post('/quitar-programa', async (req, res) => {
         const id_programa = prog[0].id
 
         // borrar relación
-        await db.query(
-            'DELETE FROM integrante_programa WHERE id_integrante = ? AND id_programa = ?', [id_integrante, id_programa]
-        )
+        await db.query('DELETE FROM integrante_programa WHERE id_integrante = ? AND id_programa = ?', [
+            id_integrante,
+            id_programa,
+        ])
 
         res.json({ ok: true })
-
     } catch (err) {
-
         console.error(err)
         res.status(500).json({ error: 'Error al quitar programa' })
-
     }
-
 })
 
-app.post('/integrante-programa', async (req, res) => {
+app.post('/integrante-programa', async(req, res) => {
     const { id_integrante, id_programa } = req.body
 
     await db.query(
@@ -415,34 +376,27 @@ VALUES (?,?)
 
     res.json({ ok: true })
 })
-app.post('/integrantes', async (req, res) => {
-
+app.post('/integrantes', async(req, res) => {
     const { nombre, genero, rol, canta, hizo, nacio, img } = req.body
 
     try {
-
         const [result] = await db.query(
             `
       INSERT INTO integrantes
       (nombre, genero, rol, canta, hizo, nacio, img)
       VALUES (?,?,?,?,?,?,?)
-      `,
-            [nombre, genero, rol, canta, hizo, nacio, img]
+      `, [nombre, genero, rol, canta, hizo, nacio, img],
         )
 
         res.json({
-            id: result.insertId
+            id: result.insertId,
         })
-
     } catch (err) {
-
         console.error(err)
         res.status(500).json({ error: 'Error al crear integrante' })
-
     }
-
 })
-app.post('/integrantes/:id', async (req, res) => {
+app.post('/integrantes/:id', async(req, res) => {
     const id = req.params.id
 
     const { nombre, genero, rol, canta, hizo, nacio, img } = req.body
@@ -467,11 +421,11 @@ WHERE id=?
 
 verificarTiming()
 const PORT = 3501
-// 🚀 Iniciar servidor según entorno
+    // 🚀 Iniciar servidor según entorno
 if (ENV === 'prod') {
     const httpsOptions = {
-        key: fs.readFileSync('/var/www/ssl/nazadoto.com.key'),
-        cert: fs.readFileSync('/var/www/ssl/nazadoto.com.crt'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/nazadoto.com/fullchain.pem'),
+        key: fs.readFileSync('/etc/letsencrypt/live/nazadoto.com/privkey.pem'),
     }
 
     https.createServer(httpsOptions, app).listen(PORT, () => {
