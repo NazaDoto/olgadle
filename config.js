@@ -8,7 +8,7 @@ export default {
     DB: {
         host: 'localhost',
         user: 'root',
-        password: ENV === 'prod' ? process.env.DB_PASS : '2112',
+        password: ENV === 'prod' ? 'Nazacapo341746$' : '2112',
         database: 'olgadle',
         waitForConnections: true,
         connectionLimit: 10,
