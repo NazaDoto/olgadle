@@ -142,7 +142,7 @@ router.post('/intentoQE', (req, res) => {
 
 // ── Versión ───────────────────────────────────────────────────────────────
 router.get('/api/version', (req, res) => {
-    res.json({ version: 0.5 })
+    res.json({ version: 0.6 })
 })
 
 export default router
