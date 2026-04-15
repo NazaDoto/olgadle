@@ -124,14 +124,14 @@
             <div class="square padding-text nacio-box" :class="atributoColor(item, 'nacio')"
               v-show="item.mostrar.nacio">
               <!-- Flechita arriba -->
-              <span v-if="item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">{{ integranteOculto.nacio ==
+              <span v-if="integranteOculto && item.nacio < integranteOculto.nacio" class="flecha flecha-arriba">{{ integranteOculto.nacio ==
                 'No sé' ? '-' : '▲' }}</span>
 
               <!-- Año de nacimiento -->
               <div class="nacio-text">{{ item.nacio }}</div>
 
               <!-- Flechita abajo -->
-              <span v-if="item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">{{ integranteOculto.nacio ==
+              <span v-if="integranteOculto && item.nacio > integranteOculto.nacio" class="flecha flecha-abajo">{{ integranteOculto.nacio ==
                 'No sé' ? '-' : '▼' }}</span>
             </div>
           </li>
@@ -158,12 +158,12 @@ export default {
       historial: JSON.parse(localStorage.getItem('historial')) || [],
       integrantes: JSON.parse(localStorage.getItem('integrantes')) || [],
       integranteOculto: null,
-      intentos: localStorage.getItem('intentos') || 7,
+      intentos: Number(localStorage.getItem('intentos')) || 7,
       version: localStorage.getItem('version') || null,
       intento: '',
       intentosTotales: 0,
       aciertos: 0,
-      terminado: localStorage.getItem('terminado') || 0,
+      terminado: Number(localStorage.getItem('terminado')) || 0,
       mostrarOpciones: false,
     }
   },
@@ -376,10 +376,10 @@ export default {
       }, 1000)
     },
     async adivinar(integrante) {
+      if (!integrante) return
+
       this.$refs.inputIntegrante.placeholder = 'Verificando...'
       this.$refs.inputIntegrante.disabled = true
-
-      if (!integrante) return
 
       const correcto = integrante.id === this.integranteOculto.id
 
@@ -422,7 +422,9 @@ export default {
     },
 
     atributoColor(item, atributo) {
+      if (!this.integranteOculto) return 'bg-danger text-white p-1 rounded'
       const valorOculto = this.integranteOculto[atributo]
+      if (valorOculto === undefined || valorOculto === null) return 'bg-danger text-white p-1 rounded'
 
       if (Array.isArray(item[atributo])) {
         const intersect = item[atributo].filter((v) => valorOculto.includes(v))
@@ -446,11 +448,11 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     this.checkVersion()
     document.addEventListener('click', this.handleClickOutside)
-    this.fetchIntegrante()
-    this.fetchIntegrantes()
+    await this.fetchIntegrantes()
+    await this.fetchIntegrante()
     if (this.historial.length > 0) {
       this.historial.forEach((item) => {
         // Asegurarse de que todos los atributos estén visibles
@@ -485,8 +487,9 @@ export default {
   transform: translateX(-50%);
   font-style: italic;
   text-align: center;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 10px;
+  letter-spacing: 0.02em;
 }
 
 .c-yellow {
@@ -545,13 +548,15 @@ export default {
 }
 
 .texto-ganaste {
-  font-weight: bold;
-  color: rgb(0, 255, 0);
+  font-weight: 800;
+  color: #64f38a;
+  text-shadow: 0 2px 10px rgba(43, 221, 96, 0.35);
 }
 
 .texto-perdiste {
-  font-weight: bold;
-  color: rgb(255, 0, 0);
+  font-weight: 800;
+  color: #ff6b6b;
+  text-shadow: 0 2px 10px rgba(255, 74, 74, 0.35);
 }
 
 .m-auto {
@@ -612,27 +617,46 @@ export default {
 .select-integrantes {
   max-height: 280px;
   overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .input-size {
   height: 50px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 20, 28, 0.9);
+  color: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.input-size:focus {
+  border-color: #ff6060;
+  box-shadow: 0 0 0 3px rgba(255, 96, 96, 0.22);
+  background: rgba(20, 20, 28, 0.95);
+  color: #fff;
+}
+
+.input-size::placeholder {
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .adivina-container {
-  color: white;
-  background-color: rgb(255, 47, 47);
-  border-radius: 10px;
-  padding: 20px 10px;
-  font-weight: bold;
-  box-shadow: inset 0 0 6px #2200ff;
-  text-shadow: 1px 1px 4px black;
+  color: #fff;
+  background: linear-gradient(135deg, #ff4e4e 0%, #c72eff 100%);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-weight: 800;
+  box-shadow: 0 10px 30px rgba(120, 50, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
   width: fit-content;
   margin: auto;
 }
 
 .c-white {
   color: white;
-  text-shadow: 1px 1px 4px black;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .logo {
@@ -658,7 +682,7 @@ export default {
 }
 
 .c-red {
-  background-color: rgb(255, 47, 47) !important;
+  background: linear-gradient(180deg, #ff5858 0%, #d93636 100%) !important;
 }
 
 /* Fondo principal */
@@ -675,26 +699,27 @@ export default {
 }
 
 .containerModal {
-  background: #fff;
+  background: #f9f9fb;
   border-radius: 12px;
   padding: 24px;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   animation: aparecer 0.3s ease;
 }
 
 .headerModal {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12px;
   text-align: center;
-  color: #333;
+  color: #21232a;
 }
 
 .bodyModal {
   font-size: 1rem;
-  color: #555;
+  color: #4a4f5d;
   text-align: center;
   text-justify: justify;
   margin-bottom: 20px;
@@ -704,17 +729,20 @@ export default {
   display: block;
   margin: 0 auto;
   padding: 10px 20px;
-  background: #007bff;
+  background: linear-gradient(180deg, #5c8dff 0%, #3f6fe2 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background 0.2s ease;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(56, 95, 200, 0.3);
+  transition: transform 0.15s ease, filter 0.2s ease;
 }
 
 .btn-ok:hover {
-  background: #0056b3;
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 @keyframes aparecer {
@@ -772,6 +800,17 @@ body {
   padding: 0;
 }
 
+.select-integrantes .list-group-item {
+  padding: 8px 10px;
+  color: #ececf1;
+  background: rgba(24, 24, 34, 0.97);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.select-integrantes .list-group-item:hover {
+  background: rgba(72, 72, 98, 0.95);
+}
+
 .w-744 {
   width: 744px;
   align-items: start;
@@ -818,16 +857,17 @@ body {
 }
 
 .bg-danger {
-  background-color: red !important;
+  background-color: #e64646 !important;
   box-shadow: inset 0 0 6px #000;
 }
 
 .bg-success {
-  background-color: green !important;
+  background-color: #28a745 !important;
   box-shadow: inset 0 0 6px #000;
 }
 
 .bg-warning {
+  background-color: #d8a92f !important;
   box-shadow: inset 0 0 6px #000;
 }
 

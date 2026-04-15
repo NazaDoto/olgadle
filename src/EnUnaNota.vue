@@ -283,7 +283,7 @@ export default {
     async fetchPlaylist() {
       if (!this.playlist || this.playlist.length === 0) {
         try {
-          const res = await axios.get('/api/playlist')
+          const res = await axios.get('/playlist')
           this.playlist = res.data // <-- Axios ya parsea el JSON
           localStorage.setItem('playlist', JSON.stringify(this.playlist))
         } catch (error) {

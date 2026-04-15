@@ -28,6 +28,14 @@
           <span class="text-boton">Adiviná de quién es la foto del integrante de OLGA.</span>
         </div>
       </router-link>
+      <!-- Botón SQP -->
+      <router-link to="/sqp" class="flex-row boton-container gap-2">
+        <img src="/sqp.png" alt="SQP" class="img-boton" />
+        <div class="content-boton flex-col">
+          <h1 class="titulo-boton">Soñé que pintaba</h1>
+          <span class="text-boton">Vení a pintar y hanguear con la gentuza.</span>
+        </div>
+      </router-link>
       <!-- Vista dinámica -->
     </div>
 
@@ -111,11 +119,11 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color:#b8a6a4;
+  background-color: #b8a6a4;
   background-image:
     linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.9)),
     url('/bg.jpg');
-  background-size:cover;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }

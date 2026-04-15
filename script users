@@ -1,0 +1,27 @@
+-- Usuarios
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Canvas: cada pixel es una fila
+-- Se inicializa con 150*150 = 22.500 filas en blanco
+CREATE TABLE canvas_pixels (
+  x INTEGER NOT NULL,
+  y INTEGER NOT NULL,
+  color TEXT NOT NULL DEFAULT '#FFFFFF',
+  user_id INTEGER REFERENCES users(id),
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (x, y)
+);
+
+-- Chat
+CREATE TABLE chat_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  username TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

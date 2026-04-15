@@ -7,33 +7,38 @@ import EnUnaNota from "../EnUnaNota.vue"
 import QuienEs from "../QuienEs.vue"
 import Admin from "../Admin.vue"
 import Login from "../Login.vue"
-
+import SQP from "../SQP.vue"
 const routes = [{
-        path: "/olgadle",
-        name: "Olgadle",
-        component: Olgadle,
-    },
-    {
-        path: "/en-una-nota",
-        name: "EnUnaNota",
-        component: EnUnaNota,
-    },
-    {
-        path: "/quien-es",
-        name: "QuienEs",
-        component: QuienEs,
-    },
-    {
-        path: "/login",
-        name: "Login",
-        component: Login,
-    },
-    {
-        path: "/admin",
-        name: "Admin",
-        component: Admin,
-        meta: { requiresAuth: true },
-    },
+    path: "/olgadle",
+    name: "Olgadle",
+    component: Olgadle,
+},
+{
+    path: "/en-una-nota",
+    name: "EnUnaNota",
+    component: EnUnaNota,
+},
+{
+    path: "/quien-es",
+    name: "QuienEs",
+    component: QuienEs,
+},
+{
+    path: "/sqp",
+    name: "SQP",
+    component: SQP,
+},
+{
+    path: "/login",
+    name: "Login",
+    component: Login,
+},
+{
+    path: "/admin",
+    name: "Admin",
+    component: Admin,
+    meta: { requiresAuth: true },
+},
 ]
 
 const router = createRouter({
