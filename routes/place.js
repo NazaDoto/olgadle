@@ -227,10 +227,14 @@ export function setupPlaceSockets(io) {
             if (x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) return
             if (!/^#[0-9A-Fa-f]{6}$/.test(color)) return
             console.log('dibujando pixel', x, y, color)
-            await db.query(
-                'UPDATE canvas_pixels SET color=?, user_id=? WHERE x=? AND y=?',
-                [color, null, x, y]
-            )
+            try {
+                await db.query(
+                    'UPDATE canvas_pixels SET color=?, user_id=? WHERE x=? AND y=?',
+                    [color, null, x, y]
+                )
+            } catch (err) {
+                console.error(err)
+            }
             console.log('pixel dibujado', x, y, color)
             cooldowns.set(cooldownKey, now)
             io.emit('place:pixel', { x, y, color })
