@@ -353,7 +353,10 @@ export default {
 
         // ── Socket ────────────────────────────────────────────────────────────
         conectarSocket() {
-            this.socket = io('https://nazadoto.com:3502')
+            this.socket = io("https://nazadoto.com", {
+    path: "/place-socket",
+    transports: ["websocket"], // opcional pero recomendado
+})
 
             this.socket.on('place:pixel', ({ x, y, color }) => {
                 this.dibujarPixel(x, y, color)

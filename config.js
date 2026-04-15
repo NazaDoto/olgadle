@@ -3,7 +3,6 @@ const ENV = process.env.NODE_ENV || 'prod'
 export default {
     ENV,
     PORT: 3501,
-    PLACE_PORT: 3502,
     JWT_SECRET: process.env.JWT_SECRET || 'place_secret_dev',
     DB: {
         host: 'localhost',
