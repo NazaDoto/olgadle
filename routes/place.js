@@ -216,6 +216,7 @@ export function setupPlaceSockets(io) {
     io.on('connection', (socket) => {
 
         socket.on('place:pixel', async (data) => {
+            console.log('pixel recibido', data)
             await ensureWeeklyCanvasReset()
             const now = Date.now()
             const cooldownKey = `socket:${socket.id}`

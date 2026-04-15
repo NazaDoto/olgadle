@@ -358,6 +358,7 @@ export default {
 })
 
             this.socket.on('place:pixel', ({ x, y, color }) => {
+                console.log('se dibuja')
                 this.dibujarPixel(x, y, color)
             })
 
