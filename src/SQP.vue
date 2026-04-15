@@ -189,12 +189,12 @@ export default {
             if (x === null) return
 
             if (this.cooldownRestante > 0) return
-
+            console.log('se clickea')
             this.socket.emit('place:pixel', {
                 x, y,
                 color: this.colorSeleccionado,
             })
-
+            
             // Optimistic update
             this.dibujarPixel(x, y, this.colorSeleccionado)
             this.iniciarCooldown()
