@@ -1,4 +1,3 @@
-import fs from 'fs'
 const ENV = process.env.NODE_ENV || 'prod'
 
 export default {
@@ -16,12 +15,11 @@ export default {
         queueLimit: 0,
     },
     SSL: {
-        cert : fs.readFileSync(
+        cert : 
             "/etc/letsencrypt/live/nazadoto.com/fullchain.pem",
-        ),
-        key : fs.readFileSync(
-            "/etc/letsencrypt/live/nazadoto.com/privkey.pem",
-        ),
+        
+        key : "/etc/letsencrypt/live/nazadoto.com/privkey.pem",
+        
     },
     INTERVALO_MS: 12 * 60 * 60 * 1000,
     CANVAS_SIZE: 150,
