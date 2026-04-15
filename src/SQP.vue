@@ -194,7 +194,7 @@ export default {
                 x, y,
                 color: this.colorSeleccionado,
             })
-            
+
             // Optimistic update
             this.dibujarPixel(x, y, this.colorSeleccionado)
             this.iniciarCooldown()
@@ -357,18 +357,23 @@ export default {
     path: "/place-socket",
 })
 
-            this.socket.on('place:pixel', ({ x, y, color }) => {
-                console.log('se dibuja')
-                this.dibujarPixel(x, y, color)
-            })
+            his.socket.on('connect', async () => {
+        console.log('🟢 conectado')
+        const { data } = await axios.get('/place/canvas')
+        this.iniciarCanvas(data.canvas)
+    })
 
-            this.socket.on('place:cooldown', ({ remaining }) => {
-                this.iniciarCooldown(remaining)
-            })
+    this.socket.on('disconnect', () => {
+        console.log('🔴 desconectado')
+    })
 
-            this.socket.on('place:error', (msg) => {
-                console.warn('place error:', msg)
-            })
+    this.socket.on('place:pixel', ({ x, y, color }) => {
+        this.dibujarPixel(x, y, color)
+    })
+
+    this.socket.on('place:cooldown', ({ remaining }) => {
+        this.iniciarCooldown(remaining)
+    })
 
             this.socket.on('place:canvas-reset', async () => {
                 try {
