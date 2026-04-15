@@ -1,3 +1,4 @@
+import fs from 'fs'
 const ENV = process.env.NODE_ENV || 'prod'
 
 export default {
