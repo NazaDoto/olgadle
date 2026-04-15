@@ -353,7 +353,7 @@ export default {
 
         // ── Socket ────────────────────────────────────────────────────────────
         conectarSocket() {
-            this.socket = io("https://nazadoto.com", {
+            this.socket = io("https://olgadle.nazadoto.com", {
     path: "/place-socket",
 })
 

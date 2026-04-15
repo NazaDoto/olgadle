@@ -62,7 +62,13 @@ if (config.ENV === 'prod') {
 
 // Socket.io comparte el mismo server HTTPS/HTTP (mismo puerto, sin :3502)
 const io = new Server(server, {
-    cors: { origin: '*' },
-    path: '/place-socket', // path custom para no pisar otros ws
+    path: '/place-socket',
+    cors: {
+        origin: [
+            'https://olgadle.nazadoto.com'
+        ],
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
 })
 setupPlaceSockets(io)
