@@ -214,9 +214,9 @@ const cooldowns = new Map()
 export function setupPlaceSockets(io) {
     placeIo = io
     io.on('connection', (socket) => {
-
+        console.log('🟢 cliente conectado', socket.id)
         socket.on('place:pixel', async (data) => {
-            console.log('pixel recibido', data)
+            console.log('📩 pixel recibido', data)
             await ensureWeeklyCanvasReset()
             const now = Date.now()
             const cooldownKey = `socket:${socket.id}`

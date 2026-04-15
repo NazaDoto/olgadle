@@ -355,6 +355,7 @@ export default {
         conectarSocket() {
             this.socket = io("https://olgadle.nazadoto.com", {
     path: "/place-socket",
+    transports: ["websocket"], // 🔥 importante
 })
 
             this.socket.on('connect', async () => {
