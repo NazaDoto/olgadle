@@ -15,8 +15,12 @@ export default {
         queueLimit: 0,
     },
     SSL: {
-        key: '/var/www/ssl/nazadoto.com.key',
-        cert: '/var/www/ssl/nazadoto.com.crt',
+        cert : fs.readFileSync(
+            "/etc/letsencrypt/live/nazadoto.com/fullchain.pem",
+        ),
+        key : fs.readFileSync(
+            "/etc/letsencrypt/live/nazadoto.com/privkey.pem",
+        ),
     },
     INTERVALO_MS: 12 * 60 * 60 * 1000,
     CANVAS_SIZE: 150,
