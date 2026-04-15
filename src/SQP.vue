@@ -357,7 +357,7 @@ export default {
     path: "/place-socket",
 })
 
-            his.socket.on('connect', async () => {
+            this.socket.on('connect', async () => {
         console.log('🟢 conectado')
         const { data } = await axios.get('/place/canvas')
         this.iniciarCanvas(data.canvas)
