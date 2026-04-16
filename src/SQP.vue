@@ -440,35 +440,24 @@ export default {
     },
 
     async mounted() {
-        this.instalarFiltroErroresEmbeds()
-        this.cargando = true
-        try {
-            this.cargando = false
+    this.instalarFiltroErroresEmbeds()
+    this.cargando = true
 
-            await this.$nextTick()
-            this.actualizarViewportMedidas()
-            this.iniciarObserverViewport()
-            this.iniciarCanvas(data.canvas)
-            this.centrarViewport()
-            await this.cargarYoutubeLiveVideoId()
-            await this.cargarTiempoRestanteCiclo()
-            this.youtubeRefreshInterval = setInterval(() => {
-                this.cargarYoutubeLiveVideoId()
-            }, 60000)
-            this.cicloTickerInterval = setInterval(() => {
-                this.tiempoRestanteCiclo = Math.max(0, this.tiempoRestanteCiclo - 1)
-            }, 1000)
-            this.cicloRefreshInterval = setInterval(() => {
-                this.cargarTiempoRestanteCiclo()
-            }, 60000)
-        } catch (e) {
-            console.error(e)
-            console.log('no se hizo el try')
-            this.cargando = false
-        }
+    await this.cargarYoutubeLiveVideoId()
+    await this.cargarTiempoRestanteCiclo()
 
-        this.conectarSocket()
-    },
+    this.youtubeRefreshInterval = setInterval(() => {
+        this.cargarYoutubeLiveVideoId()
+    }, 60000)
+    this.cicloTickerInterval = setInterval(() => {
+        this.tiempoRestanteCiclo = Math.max(0, this.tiempoRestanteCiclo - 1)
+    }, 1000)
+    this.cicloRefreshInterval = setInterval(() => {
+        this.cargarTiempoRestanteCiclo()
+    }, 60000)
+
+    this.conectarSocket() // el canvas se carga dentro del evento 'connect'
+},
 
     unmounted() {
         if (this.socket) this.socket.disconnect()
