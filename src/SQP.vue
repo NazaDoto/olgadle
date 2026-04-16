@@ -362,6 +362,9 @@ export default {
         console.log('🟢 conectado')
         const { data } = await axios.get('/place/canvas')
         this.iniciarCanvas(data.canvas)
+        this.cargando = false
+        await this.$nextTick()
+        this.centrarViewport()
     })
 
     this.socket.on('disconnect', () => {
@@ -438,7 +441,6 @@ export default {
         this.instalarFiltroErroresEmbeds()
         this.cargando = true
         try {
-            const { data } = await axios.get('/place/canvas')
             this.cargando = false
 
             await this.$nextTick()
