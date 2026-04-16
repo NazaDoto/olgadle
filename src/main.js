@@ -9,7 +9,7 @@ const env = 'prod';
 if (env == 'dev') {
     axios.defaults.baseURL = url;
 } else {
-    axios.defaults.baseURL = 'https://nazadoto.com:3501';
+    axios.defaults.baseURL = '';
 }
 
 const app = createApp(App)
