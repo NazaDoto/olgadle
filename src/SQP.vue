@@ -308,6 +308,7 @@ export default {
 
         async cargarTiempoRestanteCiclo() {
             try {
+                console.log('fetch tiempo restante')
                 const { data } = await axios.get('/place/reset-info')
                 console.log(data)
                 this.tiempoRestanteCiclo = Math.max(0, Number(data?.tiempoRestante || 0))
