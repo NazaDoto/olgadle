@@ -39,7 +39,7 @@
             <!-- CABECERA -->
 
             <div class="d-flex align-items-center mb-3">
-              <img v-if="i.img" :src="'https://nazadoto.com:3501/uploads/' + i.img" class="rounded me-3"
+              <img v-if="i.img" :src="'/uploads/' + i.img" class="rounded me-3"
                 style="width: 70px; height: 70px; object-fit: cover" />
 
               <div class="flex-grow-1">
@@ -229,7 +229,7 @@
           <label class="fw-semibold small mb-2">Imagen</label>
 
           <div class="border rounded p-2 text-center " @dragover.prevent @drop="dropImagenNuevo">
-            <img v-if="nuevo.img" :src="'https://nazadoto.com:3501/uploads/' + nuevo.img" class="img-fluid mb-2"
+            <img v-if="nuevo.img" :src="'/uploads/' + nuevo.img" class="img-fluid mb-2"
               style="max-height: 120px" />
             <div class="d-flex flex-row gap-2 mt-2">
 

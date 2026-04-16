@@ -6,7 +6,7 @@
         Era {{ integranteOculto.nombre }}
         <br />
         <img v-if="integranteOculto && integranteOculto.img"
-          :src="'https://nazadoto.com:3501/uploads/' + integranteOculto.img" alt="" class="square mt-2" />
+          :src="'/uploads/' + integranteOculto.img" alt="" class="square mt-2" />
       </div>
       <div class="bodyModal">Volvé en {{ tiempoRestante }}</div>
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
@@ -60,7 +60,7 @@
             class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
             <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
               class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3">
-              <img v-if="opcion.img" :src="'https://nazadoto.com:3501/uploads/' + opcion.img" alt="foto"
+              <img v-if="opcion.img" :src="'/uploads/' + opcion.img" alt="foto"
                 class="img-square" />
               {{ opcion.nombre }}
             </li>
@@ -99,7 +99,7 @@
           <li v-for="item in historial" :key="item.nombre" class="list-group-item d-flex gap-1 bg-none w-744 mb-1">
             <div class="square relative" v-show="item.img && item.mostrar.img">
               <div class="inset-shadow absolute-100 rounded"></div>
-              <img class="rounded" width="100%" height="100%" :src="'https://nazadoto.com:3501/uploads/' + item.img" />
+              <img class="rounded" width="100%" height="100%" :src="'/uploads/' + item.img" />
             </div>
 
             <div class="square padding-text" :class="atributoColor(item, 'genero')" v-show="item.mostrar.genero">
