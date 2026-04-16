@@ -463,6 +463,7 @@ export default {
             }, 60000)
         } catch (e) {
             console.error(e)
+            console.log('no se hizo el try')
             this.cargando = false
         }
 
