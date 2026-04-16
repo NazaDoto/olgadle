@@ -360,14 +360,16 @@ export default {
     transports: ["websocket"], // 🔥 importante
 })
 
-            this.socket.on('connect', async () => {
-        console.log('🟢 conectado')
-        const { data } = await axios.get('/place/canvas')
-        this.iniciarCanvas(data.canvas)
-        this.cargando = false
-        await this.$nextTick()
-        this.centrarViewport()
-    })
+        this.socket.on('connect', async () => {
+    console.log('🟢 conectado')
+    const { data } = await axios.get('/api/place/canvas')
+    this.iniciarCanvas(data.canvas)
+    this.cargando = false
+    await this.$nextTick()
+    this.actualizarViewportMedidas()
+    this.iniciarObserverViewport()
+    this.centrarViewport()
+})
 
     this.socket.on('disconnect', () => {
         console.log('🔴 desconectado')
