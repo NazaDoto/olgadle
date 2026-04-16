@@ -20,19 +20,19 @@ app.use(express.json())
 app.use(cors())
 
 // ── Rutas ──────────────────────────────────────────────────────────────────
-app.use('/', adminRoutes)
-app.use('/integrantes', integrantesRoutes)
-app.use('/', playlistRoutes)
-app.use('/', juegoRoutes)
-app.use('/', placeRoutes)
+app.use('/api/integrantes', integrantesRoutes)
+app.use('/api/playlist', playlistRoutes)
+app.use('/api', juegoRoutes)      // tiene rutas como /integrante, /api/random-tracks
+app.use('/api', adminRoutes)      // tiene /login, /upload
+app.use('/api', placeRoutes)      // tiene /place/canvas, etc.
 
 // Programas (simple, lo dejamos en app.js por ser pequeño)
 import db from './db.js'
-app.get('/programas', async (req, res) => {
+app.get('/api/programas', async (req, res) => {
     const [rows] = await db.query('SELECT * FROM programas')
     res.json(rows)
 })
-app.post('/programas', async (req, res) => {
+app.post('/api/programas', async (req, res) => {
     const [result] = await db.query('INSERT INTO programas(nombre) VALUES (?)', [req.body.nombre])
     res.json({ id: result.insertId })
 })
