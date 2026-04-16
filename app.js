@@ -43,7 +43,7 @@ await verificarTiming()
 
 // ── Servidor + Socket.io ───────────────────────────────────────────────────
 let server
-
+/*
 if (config.ENV === 'prod') {
     const httpsOptions = {
         key: fs.readFileSync(config.SSL.key),
@@ -59,7 +59,12 @@ if (config.ENV === 'prod') {
         console.log(`🖥️ HTTP en http://localhost:${config.PORT}`)
     })
 }
+*/
 
+server = http.createServer(app)
+server.listen(config.PORT, () => {
+    console.log(`🖥️ HTTP en http://localhost:${config.PORT}`)
+})
 const io = new Server(server, {
     path: '/place-socket',
     cors: { origin: "*" },
