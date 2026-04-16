@@ -7,7 +7,7 @@
         <p class="lead text-center mt-2 mb-4 adivina-container">Pintá y charlá de chill</p>
         <p class="text-center ciclo-timer mb-3">
             Reinicio semanal del place en
-            <span class="ciclo-time">{{ tiempoRestanteFormateado }}</span>
+            <span class="ciclo-timer">{{ tiempoRestanteFormateado }}</span>
         </p>
 
         <div v-if="cargando" class="loader-container">
@@ -309,6 +309,7 @@ export default {
         async cargarTiempoRestanteCiclo() {
             try {
                 const { data } = await axios.get('/place/reset-info')
+                console.log(data)
                 this.tiempoRestanteCiclo = Math.max(0, Number(data?.tiempoRestante || 0))
             } catch (_err) {
                 // Si falla, dejamos que el contador local siga.
