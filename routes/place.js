@@ -148,7 +148,9 @@ router.get('/place/canvas', async (req, res) => {
 })
 
 router.get('/place/reset-info', async (_req, res) => {
+    console.log('reset-info')
     await ensureWeeklyCanvasReset()
+    console.log('ensureWeeklyCanvasReset')
     const nextResetAt = lastPlaceResetAt + PLACE_RESET_INTERVAL_MS
     console.log(tiempoRestanteResetPlaceSegundos())
     res.json({
