@@ -46,12 +46,6 @@
                     </div>
                 </div>
 
-                <!-- Cooldown bar -->
-                <div class="cooldown-bar mt-2">
-                    <div v-if="cooldownRestante > 0" class="cooldown-fill"
-                        :style="{ width: (cooldownRestante / 20) * 100 + '%' }" />
-                    <div v-else class="cooldown-listo">¡Listo para pintar!</div>
-                </div>
 
                 <!-- Info zoom -->
                 <p class="aclaracion mt-1">Scroll para hacer zoom · Click para poner tu pixel</p>
@@ -101,7 +95,6 @@ import axios from 'axios'
 import { io } from 'socket.io-client'
 
 const CANVAS_SIZE = 150
-const COOLDOWN_MS = 20000
 const BASE_RENDER_SIZE = 600
 
 const PALETA = [
@@ -137,10 +130,6 @@ export default {
             dragStartScrollLeft: 0,
             dragStartScrollTop: 0,
             suppressNextClick: false,
-
-            // Cooldown
-            cooldownRestante: 0,
-            cooldownInterval: null,
 
             // Chat embeds
             activeChatTab: 'twitch',
@@ -188,8 +177,6 @@ export default {
             const { x, y } = this.canvasCoords(e)
             if (x === null) return
 
-            if (this.cooldownRestante > 0) return
-            console.log('se clickea')
             this.socket.emit('place:pixel', {
                 x, y,
                 color: this.colorSeleccionado,
@@ -197,7 +184,6 @@ export default {
 
             // Optimistic update
             this.dibujarPixel(x, y, this.colorSeleccionado)
-            this.iniciarCooldown()
         },
 
         handleCanvasHover(e) {
@@ -343,15 +329,6 @@ export default {
             return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
         },
 
-        // ── Cooldown ──────────────────────────────────────────────────────────
-        iniciarCooldown(ms = COOLDOWN_MS) {
-            this.cooldownRestante = ms / 1000
-            if (this.cooldownInterval) clearInterval(this.cooldownInterval)
-            this.cooldownInterval = setInterval(() => {
-                this.cooldownRestante = Math.max(0, this.cooldownRestante - 0.1)
-                if (this.cooldownRestante === 0) clearInterval(this.cooldownInterval)
-            }, 100)
-        },
 
         // ── Socket ────────────────────────────────────────────────────────────
         conectarSocket() {
@@ -380,9 +357,6 @@ export default {
         this.dibujarPixel(x, y, color)
     })
 
-    this.socket.on('place:cooldown', ({ remaining }) => {
-        this.iniciarCooldown(remaining)
-    })
 
             this.socket.on('place:canvas-reset', async () => {
                 try {
@@ -463,7 +437,6 @@ export default {
 
     unmounted() {
         if (this.socket) this.socket.disconnect()
-        if (this.cooldownInterval) clearInterval(this.cooldownInterval)
         if (this.youtubeRefreshInterval) clearInterval(this.youtubeRefreshInterval)
         if (this.cicloTickerInterval) clearInterval(this.cicloTickerInterval)
         if (this.cicloRefreshInterval) clearInterval(this.cicloRefreshInterval)
@@ -636,33 +609,6 @@ export default {
     border-radius: 6px;
     border: 2px solid #fff;
     flex-shrink: 0;
-}
-
-/* ── Cooldown ────────────────────────────────────────────────────────────── */
-.cooldown-bar {
-    flex-shrink: 0;
-    height: 20px;
-    background: #1f1f23;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-}
-
-.cooldown-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #9146ff, #6441a5);
-    transition: width 0.1s linear;
-}
-
-.cooldown-listo {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: #0f0;
-    font-weight: 600;
 }
 
 .canvas-section .aclaracion {

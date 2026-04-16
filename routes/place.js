@@ -6,7 +6,7 @@ import config from '../config.js'
 import { verifySocketToken } from '../middleware/auth.js'
 
 const router = Router()
-const { CANVAS_SIZE, COOLDOWN_MS, JWT_SECRET } = config
+const { CANVAS_SIZE,  JWT_SECRET } = config
 const YT_API_BASE = 'https://www.googleapis.com/youtube/v3'
 const PLACE_RESET_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000
 let youtubeChannelIdCache = config.YOUTUBE?.channelId || ''
@@ -82,7 +82,6 @@ export async function resetCanvasForNewCycle() {
     await db.query(
         "UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL"
     )
-    cooldowns.clear()
     if (placeIo) placeIo.emit('place:canvas-reset')
     console.log('🧼 Canvas de place reseteado para nuevo ciclo')
 }
@@ -212,7 +211,6 @@ router.get('/place/youtube-live-id', async (_req, res) => {
 })
 
 // ── Socket.io setup (se llama desde app.js pasando el server HTTPS) ───────
-const cooldowns = new Map()
 
 export function setupPlaceSockets(io) {
     placeIo = io
@@ -222,10 +220,6 @@ export function setupPlaceSockets(io) {
             console.log('📩 pixel recibido', data)
             await ensureWeeklyCanvasReset()
             const now = Date.now()
-            const cooldownKey = `socket:${socket.id}`
-            const remaining = COOLDOWN_MS - (now - (cooldowns.get(cooldownKey) || 0))
-            if (remaining > 0) { socket.emit('place:cooldown', { remaining }); return }
-
             const { x, y, color } = data
             if (x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) return
             if (!/^#[0-9A-Fa-f]{6}$/.test(color)) return
@@ -239,7 +233,6 @@ export function setupPlaceSockets(io) {
                 console.error(err)
             }
             console.log('pixel dibujado', x, y, color)
-            cooldowns.set(cooldownKey, now)
             io.emit('place:pixel', { x, y, color })
         })
 
