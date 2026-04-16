@@ -363,12 +363,12 @@ export default {
         this.socket.on('connect', async () => {
     console.log('🟢 conectado')
     const { data } = await axios.get('/place/canvas')
-    this.iniciarCanvas(data.canvas)
-    this.cargando = false
     await this.$nextTick()
+    this.iniciarCanvas(data.canvas)
     this.actualizarViewportMedidas()
     this.iniciarObserverViewport()
     this.centrarViewport()
+    this.cargando = false
 })
 
     this.socket.on('disconnect', () => {
