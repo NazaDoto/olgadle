@@ -362,7 +362,7 @@ export default {
 
         this.socket.on('connect', async () => {
     console.log('🟢 conectado')
-    const { data } = await axios.get('/api/place/canvas')
+    const { data } = await axios.get('/place/canvas')
     this.iniciarCanvas(data.canvas)
     this.cargando = false
     await this.$nextTick()
