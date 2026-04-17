@@ -21,7 +21,7 @@ app.use(cors())
 
 // ── Rutas ──────────────────────────────────────────────────────────────────
 app.use('/api/integrantes', integrantesRoutes)
-app.use('/api/playlist', playlistRoutes)
+app.use('/api', playlistRoutes)
 app.use('/api', juegoRoutes)      // tiene rutas como /integrante, /api/random-tracks
 app.use('/api', adminRoutes)      // tiene /login, /upload
 app.use('/api', placeRoutes)      // tiene /place/canvas, etc.

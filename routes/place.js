@@ -59,23 +59,24 @@ export async function initCanvas() {
     )
   `)
 
-    const [[{ count }]] = await db.query('SELECT COUNT(*) as count FROM canvas_pixels')
-    if (count === 0) {
-        console.log('🎨 Inicializando canvas 150×150...')
-        const values = []
-        for (let y = 0; y < CANVAS_SIZE; y++)
-            for (let x = 0; x < CANVAS_SIZE; x++)
-                values.push(`(${x}, ${y}, '#FFFFFF')`)
+  const [[{ count }]] = await db.query('SELECT COUNT(*) as count FROM canvas_pixels')
+  const expectedCount = CANVAS_SIZE * CANVAS_SIZE
 
-        // Insertar en bloques de 5000 para no saturar MySQL
-        const chunk = 5000
-        for (let i = 0; i < values.length; i += chunk) {
-            await db.query(
-                `INSERT IGNORE INTO canvas_pixels (x, y, color) VALUES ${values.slice(i, i + chunk).join(',')}`
-            )
-        }
-        console.log('✅ Canvas inicializado')
-    }
+  if (count < expectedCount) {
+      console.log(`🎨 Expandiendo canvas a ${CANVAS_SIZE}×${CANVAS_SIZE} (tenía ${count} píxeles)...`)
+      const values = []
+      for (let y = 0; y < CANVAS_SIZE; y++)
+          for (let x = 0; x < CANVAS_SIZE; x++)
+              values.push(`(${x}, ${y}, '#FFFFFF')`)
+
+      const chunk = 5000
+      for (let i = 0; i < values.length; i += chunk) {
+          await db.query(
+              `INSERT IGNORE INTO canvas_pixels (x, y, color) VALUES ${values.slice(i, i + chunk).join(',')}`
+          )
+      }
+      console.log(`✅ Canvas expandido (${count} → ${expectedCount} píxeles)`)
+  }
 }
 
 export async function resetCanvasForNewCycle() {

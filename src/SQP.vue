@@ -96,7 +96,7 @@
 import axios from 'axios'
 import { io } from 'socket.io-client'
 
-const CANVAS_SIZE = 500
+const CANVAS_SIZE = 1000
 const BASE_RENDER_SIZE = 600
 
 const PALETA = [

@@ -21,7 +21,7 @@ export default {
         
     },
     INTERVALO_MS: 12 * 60 * 60 * 1000,
-    CANVAS_SIZE: 500,
+    CANVAS_SIZE: 1000,
     YOUTUBE: {
         apiKey: process.env.YOUTUBE_API_KEY || 'AIzaSyB8JFz4XdDl62ny4LiA-dMnY6o_SNEw2s0',
         handle: process.env.YOUTUBE_CHANNEL_HANDLE || 'olgaenvivo_',
