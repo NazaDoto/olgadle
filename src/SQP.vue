@@ -53,7 +53,7 @@
 
 
                 <!-- Info zoom -->
-                <p class="aclaracion mt-1">Scroll para hacer zoom · Click para poner tu pixel</p>
+                <p class="aclaracion mt-1">Scroll para hacer zoom · Click o "F" para poner tu pixel</p>
             </div>
 
             <!-- ── Chat ────────────────────────────────────────────────────────── -->
