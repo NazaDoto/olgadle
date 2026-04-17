@@ -115,6 +115,7 @@ export default {
     data() {
         return {
             CANVAS_SIZE,
+            isFPressed: false,
             cargando: true,
             socket: null,
 
@@ -149,6 +150,30 @@ export default {
     },
 
     methods: {
+        handleKeyDown(e) {
+    if (e.key.toLowerCase() === 'f' && !this.isFPressed) {
+        this.isFPressed = true
+
+        // 🔥 simular click en el pixel actual
+        if (this.hoverPixel) {
+            const { x, y } = this.hoverPixel
+
+            this.socket.emit('place:pixel', {
+                x,
+                y,
+                color: this.colorSeleccionado,
+            })
+
+            this.dibujarPixel(x, y, this.colorSeleccionado)
+        }
+    }
+},
+
+handleKeyUp(e) {
+    if (e.key.toLowerCase() === 'f') {
+        this.isFPressed = false
+    }
+},
         toggleFullscreen() {
     const el = this.$refs.placeLayout
 
@@ -244,6 +269,8 @@ export default {
         },
 
         startPanDrag(e) {
+                if (this.isFPressed) return // 🔥 clave
+
             if (e.button !== 0) return
             const viewport = this.$refs.canvasViewport
             if (!viewport) return
@@ -451,6 +478,8 @@ export default {
     }, 60000)
 
     this.conectarSocket() // el canvas se carga dentro del evento 'connect'
+    window.addEventListener('keydown', this.handleKeyDown)
+    window.addEventListener('keyup', this.handleKeyUp)
     document.addEventListener('fullscreenchange', () => {
         this.$nextTick(() => {
             this.actualizarViewportMedidas()
@@ -468,6 +497,8 @@ export default {
         if (this.externalEmbedErrorHandler) {
             window.removeEventListener('error', this.externalEmbedErrorHandler)
         }
+        window.removeEventListener('keydown', this.handleKeyDown)
+    window.removeEventListener('keyup', this.handleKeyUp)
     },
 }
 </script>
