@@ -549,11 +549,8 @@ export default {
     border-radius: 6px;
     border: 1px solid #3a3a3d;
     cursor: grab;
-    scrollbar-width: none;
+    scrollbar-width: thin;
     scrollbar-color: #56565a #1f1f23;
-}
-.canvas-viewport::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
 }
 .canvas-viewport.dragging {
     cursor: grabbing;
