@@ -27,7 +27,7 @@
                     <label class="color-picker-rainbow" title="Color personalizado">
     <input type="color"
     v-model="colorPersonalizado"
-    @input="onColorPersonalizado" />
+    @input="onColorPersonalizado" @change="addColorPersonalizado" />
 </label>
                     <div class="color-actual" :style="{ background: colorSeleccionado }" title="Color actual" />
                 <button class="fullscreen-btn" @click="toggleFullscreen" title="Pantalla completa">
@@ -154,6 +154,9 @@ export default {
         onColorPersonalizado() {
     this.colorSeleccionado = this.colorPersonalizado
 
+    
+},
+addColorPersonalizado(){
     if (!this.paleta.includes(this.colorPersonalizado)) {
         this.paleta.push(this.colorPersonalizado)
     }
