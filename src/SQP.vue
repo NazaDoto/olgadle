@@ -100,10 +100,10 @@ const CANVAS_SIZE = 1000
 const BASE_RENDER_SIZE = 600
 
 const PALETA = [
-    '#FFFFFF', '#E4E4E4', '#888888', '#222222',
-    '#FFA7D1', '#E50000', '#E59500', '#A06A42',
-    '#E5D900', '#94E044', '#02BE01', '#00D3DD',
-    '#0083C7', '#0000EA', '#CF6EE4', '#820080',
+    '#FFFFFF', '#CCCCCC', '#808080', '#000000',
+    '#FF66CC', '#FF0000', '#FF9900', '#8B4513',
+    '#FFFF00', '#66FF00', '#00FF00', '#00FFFF',
+    '#0099FF', '#0000FF', '#CC66FF', '#8000FF',
 ]
 
 export default {
