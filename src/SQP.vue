@@ -472,11 +472,11 @@ export default {
 }
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .place-layout {
-    --place-panel-height: 600px;
+    --place-panel-height: 700px;
     display: flex;
     gap: 0;
     align-items: stretch;
-    max-width: 1100px;
+    max-width: calc(100vw - 32px); /* ancho casi completo con margen */
     margin: 0 auto;
     background: #18181b;
     border: 1px solid #2d2d30;
@@ -507,7 +507,7 @@ export default {
 
 @media (max-width: 768px) {
     .place-layout {
-        --place-panel-height: 380px;
+        --place-panel-height: 420px;
         flex-direction: column;
     }
 
