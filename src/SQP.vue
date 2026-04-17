@@ -14,7 +14,7 @@
             <div class="spinner"></div>
         </div>
 
-        <div v-else class="place-layout">
+        <div v-else class="place-layout" ref="placeLayout">
             <!-- ── Canvas ──────────────────────────────────────────────────────── -->
             <div class="canvas-section">
                 <!-- Toolbar -->
@@ -29,6 +29,9 @@
         @change="colorSeleccionado = colorPersonalizado" />
 </label>
                     <div class="color-actual" :style="{ background: colorSeleccionado }" title="Color actual" />
+                <button class="fullscreen-btn" @click="toggleFullscreen" title="Pantalla completa">
+    ⛶
+</button>
                 </div>
 
                 <!-- Canvas wrapper responsivo -->
@@ -146,6 +149,19 @@ export default {
     },
 
     methods: {
+        toggleFullscreen() {
+    const el = this.$refs.placeLayout
+
+    if (!document.fullscreenElement) {
+        if (el.requestFullscreen) {
+            el.requestFullscreen()
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen()
+        }
+    }
+},
         // ── Canvas ────────────────────────────────────────────────────────────
         iniciarCanvas(flatPixels) {
             const canvas = this.$refs.canvas
@@ -435,6 +451,12 @@ export default {
     }, 60000)
 
     this.conectarSocket() // el canvas se carga dentro del evento 'connect'
+    document.addEventListener('fullscreenchange', () => {
+        this.$nextTick(() => {
+            this.actualizarViewportMedidas()
+            this.centrarViewport()
+        })
+    })
 },
 
     unmounted() {
@@ -451,6 +473,26 @@ export default {
 </script>
 
 <style>
+.fullscreen-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #2a2a2e;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.fullscreen-btn:hover {
+    background: #3a3a3f;
+    border-color: #fff;
+}
 .color-picker-rainbow {
     width: 36px;
     height: 36px;
@@ -483,7 +525,17 @@ export default {
     border-radius: 10px;
     overflow: hidden;
 }
-
+.place-layout:fullscreen {
+        --place-panel-height: auto;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+}
+.place-layout:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+}
 .canvas-section {
     flex: 1 1 0;
     min-width: 0;
