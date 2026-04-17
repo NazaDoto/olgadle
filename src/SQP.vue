@@ -24,8 +24,10 @@
                             :class="{ selected: colorSeleccionado === c }" :style="{ background: c }"
                             @click="colorSeleccionado = c" />
                     </div>
-                    <input type="color" v-model="colorPersonalizado" class="color-picker" title="Color personalizado"
-                        @change="colorSeleccionado = colorPersonalizado" />
+                    <label class="color-picker-rainbow" title="Color personalizado">
+    <input type="color" v-model="colorPersonalizado" 
+        @change="colorSeleccionado = colorPersonalizado" />
+</label>
                     <div class="color-actual" :style="{ background: colorSeleccionado }" title="Color actual" />
                 </div>
 
@@ -247,7 +249,7 @@ export default {
             viewport.scrollLeft = this.dragStartScrollLeft - deltaX
             viewport.scrollTop = this.dragStartScrollTop - deltaY
 
-            if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+            if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 8) {
                 this.suppressNextClick = true
             }
         },
@@ -449,6 +451,25 @@ export default {
 </script>
 
 <style>
+.color-picker-rainbow {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.color-picker-rainbow input[type="color"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .place-layout {
     --place-panel-height: 600px;
@@ -528,10 +549,12 @@ export default {
     border-radius: 6px;
     border: 1px solid #3a3a3d;
     cursor: grab;
-    scrollbar-width: thin;
+    scrollbar-width: none;
     scrollbar-color: #56565a #1f1f23;
 }
-
+.canvas-viewport::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
 .canvas-viewport.dragging {
     cursor: grabbing;
 }
