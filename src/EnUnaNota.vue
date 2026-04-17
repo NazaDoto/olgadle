@@ -296,7 +296,7 @@ export default {
       // Si ya hay canciones en localStorage, las cargamos
       if (this.tracksDelDia.length == 0) {
         try {
-          const res = await axios.get('/random-tracks') // 🔥 ahora endpoint devuelve 3
+          const res = await axios.get('/api/random-tracks') // 🔥 ahora endpoint devuelve 3
           this.tracksDelDia = res.data.tracks
           this.intentosTotales = res.data.intentosTotalesEN
           this.aciertos = res.data.aciertosEN
@@ -317,7 +317,7 @@ export default {
         }
       } else {
         try {
-          const res = await axios.get('/random-tracks')
+          const res = await axios.get('/api/random-tracks')
           const sonIguales =
             this.tracksDelDia.length === res.data.tracks.length &&
             this.tracksDelDia.every((track, i) => track.id === res.data.tracks[i].id)
