@@ -25,8 +25,9 @@
                             @click="colorSeleccionado = c" />
                     </div>
                     <label class="color-picker-rainbow" title="Color personalizado">
-    <input type="color" v-model="colorPersonalizado" 
-        @change="colorSeleccionado = colorPersonalizado" />
+    <input type="color"
+    v-model="colorPersonalizado"
+    @input="onColorPersonalizado" />
 </label>
                     <div class="color-actual" :style="{ background: colorSeleccionado }" title="Color actual" />
                 <button class="fullscreen-btn" @click="toggleFullscreen" title="Pantalla completa">
@@ -150,6 +151,13 @@ export default {
     },
 
     methods: {
+        onColorPersonalizado() {
+    this.colorSeleccionado = this.colorPersonalizado
+
+    if (!this.paleta.includes(this.colorPersonalizado)) {
+        this.paleta.push(this.colorPersonalizado)
+    }
+},
         handleKeyDown(e) {
     if (e.key.toLowerCase() === 'f' && !this.isFPressed) {
         this.isFPressed = true
