@@ -8,7 +8,7 @@ import { verifySocketToken } from '../middleware/auth.js'
 const router = Router()
 const { CANVAS_SIZE,  JWT_SECRET } = config
 const YT_API_BASE = 'https://www.googleapis.com/youtube/v3'
-const PLACE_RESET_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000
+const PLACE_RESET_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000  // 30 días
 let youtubeChannelIdCache = config.YOUTUBE?.channelId || ''
 let placeIo = null
 let lastPlaceResetAt = Date.now()
@@ -58,6 +58,14 @@ export async function initCanvas() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
+  // Agregar tabla de historial
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS canvas_snapshots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        snapshot JSON NOT NULL,
+        saved_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`)
 
   const [[{ count }]] = await db.query('SELECT COUNT(*) as count FROM canvas_pixels')
   const expectedCount = CANVAS_SIZE * CANVAS_SIZE
@@ -80,11 +88,16 @@ export async function initCanvas() {
 }
 
 export async function resetCanvasForNewCycle() {
-    await db.query(
-        "UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL"
-    )
+    // Guardar snapshot antes de borrar
+    const [pixels] = await db.query('SELECT x, y, color FROM canvas_pixels ORDER BY y, x')
+    const flat = new Array(CANVAS_SIZE * CANVAS_SIZE).fill('#FFFFFF')
+    pixels.forEach(p => { flat[p.y * CANVAS_SIZE + p.x] = p.color })
+    await db.query('INSERT INTO canvas_snapshots (snapshot) VALUES (?)', [JSON.stringify(flat)])
+    console.log('📸 Snapshot guardado')
+
+    await db.query("UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL")
     if (placeIo) placeIo.emit('place:canvas-reset')
-    console.log('🧼 Canvas de place reseteado para nuevo ciclo')
+    console.log('🧼 Canvas reseteado para nuevo ciclo')
 }
 
 async function ensureWeeklyCanvasReset() {

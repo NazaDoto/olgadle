@@ -119,6 +119,7 @@ export default {
             isFPressed: false,
             cargando: true,
             socket: null,
+        lastFPixel: null, // 🔥 agregar esto
 
             // Canvas
             paleta: PALETA,
@@ -162,29 +163,27 @@ addColorPersonalizado(){
     }
 },
         handleKeyDown(e) {
-    if (e.key.toLowerCase() === 'f' && !this.isFPressed) {
+        if (e.key.toLowerCase() !== 'f') return
         this.isFPressed = true
 
-        // 🔥 simular click en el pixel actual
         if (this.hoverPixel) {
             const { x, y } = this.hoverPixel
 
-            this.socket.emit('place:pixel', {
-                x,
-                y,
-                color: this.colorSeleccionado,
-            })
+            // Solo pintar si cambió de pixel
+            if (this.lastFPixel?.x === x && this.lastFPixel?.y === y) return
 
+            this.lastFPixel = { x, y }
+            this.socket.emit('place:pixel', { x, y, color: this.colorSeleccionado })
             this.dibujarPixel(x, y, this.colorSeleccionado)
         }
-    }
-},
+    },
 
-handleKeyUp(e) {
-    if (e.key.toLowerCase() === 'f') {
-        this.isFPressed = false
-    }
-},
+    handleKeyUp(e) {
+        if (e.key.toLowerCase() === 'f') {
+            this.isFPressed = false
+            this.lastFPixel = null // resetear al soltar
+        }
+    },
         toggleFullscreen() {
     const el = this.$refs.placeLayout
 
@@ -240,21 +239,28 @@ handleKeyUp(e) {
             this.dibujarPixel(x, y, this.colorSeleccionado)
         },
 
-        handleCanvasHover(e) {
-            const rect = this.$refs.canvas.getBoundingClientRect()
-            const { x, y } = this.canvasCoords(e)
-            if (x === null) {
-                this.cursorInfo = null
-                this.hoverPixel = null
-                return
-            }
-            this.cursorInfo = {
-                x, y,
-                px: e.clientX - rect.left + 12,
-                py: e.clientY - rect.top + 12,
-            }
-            this.hoverPixel = { x, y }
-        },
+         handleCanvasHover(e) {
+        const rect = this.$refs.canvas.getBoundingClientRect()
+        const { x, y } = this.canvasCoords(e)
+        if (x === null) {
+            this.cursorInfo = null
+            this.hoverPixel = null
+            return
+        }
+        this.cursorInfo = {
+            x, y,
+            px: e.clientX - rect.left + 12,
+            py: e.clientY - rect.top + 12,
+        }
+        this.hoverPixel = { x, y }
+
+        // 🔥 Si F está apretada y nos movimos a un nuevo pixel, pintar
+        if (this.isFPressed && (this.lastFPixel?.x !== x || this.lastFPixel?.y !== y)) {
+            this.lastFPixel = { x, y }
+            this.socket.emit('place:pixel', { x, y, color: this.colorSeleccionado })
+            this.dibujarPixel(x, y, this.colorSeleccionado)
+        }
+    },
 
         handleCanvasWheel(e) {
             const viewport = this.$refs.canvasViewport
