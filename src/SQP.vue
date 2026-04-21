@@ -6,7 +6,7 @@
         </div>
         <p class="lead text-center mt-2 mb-4 adivina-container">Pintá y charlá de chill</p>
         <p class="text-center ciclo-timer mb-3">
-            Reinicio semanal del place en
+            Reinicio del place en
             <span class="ciclo-timer">{{ tiempoRestanteFormateado }}</span>
         </p>
 
