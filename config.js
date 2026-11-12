@@ -7,7 +7,7 @@ export default {
     DB: {
         host: 'localhost',
         user: 'root',
-        password: ENV === 'prod' ? 'Nazacapo341746$' : '2112',
+        password: ENV === 'prod' ? 'Naza2112' : '2112',
         database: 'olgadle',
         waitForConnections: true,
         connectionLimit: 10,
@@ -15,9 +15,9 @@ export default {
     },
     SSL: {
         cert : 
-            "/etc/letsencrypt/live/nazadoto.com/fullchain.pem",
+            "/etc/letsencrypt/live/olgadle.nazadoto.com/fullchain.pem",
         
-        key : "/etc/letsencrypt/live/nazadoto.com/privkey.pem",
+        key : "/etc/letsencrypt/live/olgadle.nazadoto.com/privkey.pem",
         
     },
     INTERVALO_MS: 12 * 60 * 60 * 1000,
