@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { gzipSync } from 'node:zlib'
+import { randomUUID } from 'node:crypto'
+import sharp from 'sharp'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import db, { transaction } from '../db.js'
@@ -12,6 +14,11 @@ const YT_API_BASE = 'https://www.googleapis.com/youtube/v3'
 const PLACE_RESET_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000  // 30 días
 let youtubeChannelIdCache = config.YOUTUBE?.channelId || ''
 let placeIo = null
+const canvasRgb = Buffer.alloc(CANVAS_SIZE * CANVAS_SIZE * 3, 255)
+const canvasInstance = randomUUID()
+let canvasRevision = 0
+let pngCache
+let canvasQueue = Promise.resolve()
 
 async function extraerVideoIdDesdePaginaLive(handle) {
     const livePageResp = await fetch(`https://www.youtube.com/@${handle}/live`)
@@ -113,43 +120,76 @@ export async function initCanvas() {
       }
       console.log(`✅ Canvas expandido (${count} → ${expectedCount} píxeles)`)
   }
+
+    const [painted] = await db.query("SELECT x, y, color FROM canvas_pixels WHERE color <> '#FFFFFF'")
+    for (const pixel of painted) updateCanvasBuffer(pixel)
+    await checkCanvasCycle()
 }
 
-function flattenCanvas(pixels) {
-    const flat = new Array(CANVAS_SIZE * CANVAS_SIZE).fill('#FFFFFF')
-    for (const { x, y, color } of pixels) {
-        if (x >= 0 && x < CANVAS_SIZE && y >= 0 && y < CANVAS_SIZE) {
-            flat[y * CANVAS_SIZE + x] = color
-        }
+function updateCanvasBuffer({ x, y, color }) {
+    if (x >= 0 && x < CANVAS_SIZE && y >= 0 && y < CANVAS_SIZE) {
+        canvasRgb.writeUIntBE(Number.parseInt(color.slice(1), 16), (y * CANVAS_SIZE + x) * 3, 3)
     }
-    return flat
 }
 
-async function withCanvasCycle(work) {
+function invalidateCanvas() {
+    canvasRevision++
+    pngCache = undefined
+}
+
+function getCanvasPng() {
+    if (!pngCache) {
+        const image = sharp(Buffer.from(canvasRgb), {
+            raw: { width: CANVAS_SIZE, height: CANVAS_SIZE, channels: 3 },
+        }).png().toBuffer()
+        pngCache = image
+        image.catch(() => {
+            if (pngCache === image) pngCache = undefined
+        })
+    }
+    return pngCache
+}
+
+function withCanvasCycle(pixel) {
+    // Keep committed writes, the in-memory image and Socket.IO events in the same order.
+    const result = canvasQueue.then(() => commitCanvasCycle(pixel))
+    canvasQueue = result.catch(() => {})
+    return result
+}
+
+async function commitCanvasCycle(pixel) {
     const result = await transaction(async (connection) => {
         const [[cycle]] = await connection.query('SELECT next_reset_at FROM canvas_cycle WHERE id = 1 FOR UPDATE')
         let nextResetAt = Number(cycle.next_reset_at)
         const now = Date.now()
         const reset = now >= nextResetAt
         if (reset) {
-            const [pixels] = await connection.query('SELECT x, y, color FROM canvas_pixels')
-            const rgb = Buffer.alloc(CANVAS_SIZE * CANVAS_SIZE * 3, 255)
-            for (const { x, y, color } of pixels) {
-                if (x >= 0 && x < CANVAS_SIZE && y >= 0 && y < CANVAS_SIZE) {
-                    rgb.writeUIntBE(Number.parseInt(color.slice(1), 16), (y * CANVAS_SIZE + x) * 3, 3)
-                }
-            }
             await connection.execute('INSERT INTO canvas_cycle_snapshots (size, rgb_gzip) VALUES (?, ?)', [
-                CANVAS_SIZE, gzipSync(rgb),
+                CANVAS_SIZE, gzipSync(canvasRgb),
             ])
             await connection.query("UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL")
             const elapsedCycles = Math.floor((now - nextResetAt) / PLACE_RESET_INTERVAL_MS) + 1
             nextResetAt += elapsedCycles * PLACE_RESET_INTERVAL_MS
             await connection.query('UPDATE canvas_cycle SET next_reset_at = ? WHERE id = 1', [nextResetAt])
         }
-        return { nextResetAt, reset, value: await work?.(connection) }
+        if (pixel) {
+            await connection.query(
+                'UPDATE canvas_pixels SET color=?, user_id=NULL WHERE x=? AND y=?',
+                [pixel.color, pixel.x, pixel.y]
+            )
+        }
+        return { nextResetAt, reset }
     })
-    if (result.reset) placeIo?.emit('place:canvas-reset')
+    if (result.reset) {
+        canvasRgb.fill(255)
+        invalidateCanvas()
+        placeIo?.emit('place:canvas-reset', { revision: canvasRevision, instance: canvasInstance })
+    }
+    if (pixel) {
+        updateCanvasBuffer(pixel)
+        invalidateCanvas()
+        placeIo?.emit('place:pixel', { ...pixel, revision: canvasRevision, instance: canvasInstance })
+    }
     return result
 }
 
@@ -191,10 +231,23 @@ router.post('/place/login', async (req, res) => {
 })
 
 // ── Canvas GET ────────────────────────────────────────────────────────────
-router.get('/place/canvas', async (_req, res) => {
-    await checkCanvasCycle()
-    const [pixels] = await db.query('SELECT x, y, color FROM canvas_pixels')
-    res.json({ canvas: flattenCanvas(pixels), size: CANVAS_SIZE })
+router.get('/place/canvas.png', async (req, res) => {
+    const revision = canvasRevision
+    res.set({
+        'Cache-Control': 'private, no-cache',
+        ETag: `"${canvasInstance}-${revision}"`,
+        'X-Canvas-Instance': canvasInstance,
+        'X-Canvas-Revision': String(revision),
+    })
+    if (req.fresh) return res.status(304).end()
+    res.type('png').send(await getCanvasPng())
+})
+
+router.get('/place/canvas', (_req, res) => {
+    const canvas = Array.from({ length: CANVAS_SIZE * CANVAS_SIZE }, (_, index) =>
+        '#' + canvasRgb.readUIntBE(index * 3, 3).toString(16).padStart(6, '0').toUpperCase()
+    )
+    res.json({ canvas, size: CANVAS_SIZE })
 })
 
 router.get('/place/reset-info', async (_req, res) => {
@@ -275,11 +328,7 @@ export function setupPlaceSockets(io) {
                 x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) return
             if (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color)) return
             try {
-                await withCanvasCycle((connection) => connection.query(
-                    'UPDATE canvas_pixels SET color=?, user_id=NULL WHERE x=? AND y=?',
-                    [color, x, y]
-                ))
-                io.emit('place:pixel', { x, y, color })
+                await withCanvasCycle({ x, y, color })
             } catch (error) {
                 console.error('Error guardando píxel:', error.message)
                 socket.emit('place:error', 'No se pudo guardar el píxel')

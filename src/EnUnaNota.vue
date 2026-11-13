@@ -18,17 +18,22 @@
 
         <!-- Controles de reproducción -->
         <div class="d-flex flex-row gap-2 space-between mb-3">
-          <button @click="playSegment" class="btn-ok" aria-label="Reproducir">▶</button>
+          <button @click="togglePlayback" class="btn-ok audio-control"
+            :class="{ 'audio-active': audioPlaying || audioPending }"
+            :aria-label="audioPlaying ? 'Pausar' : 'Reproducir'" :aria-pressed="audioPlaying">
+            {{ audioPending ? '…' : audioPlaying ? 'Ⅱ' : '▶' }}
+          </button>
           <div class="text-center">
             <label class="c-white">Volumen: {{ Math.round(volume * 100) }}%</label>
             <input type="range" min="0" max="1" step="0.01" v-model="volume" class="w-100 mt-2" />
           </div>
-          <button @click="nextSegment" aria-label="Siguiente fragmento" :disabled="currentSegment >= durations.length" class="btn-ok">
+          <button @click="nextSegment" class="btn-ok audio-control" :class="{ 'audio-active': skipFeedback }"
+            :aria-label="currentSegment === durations.length - 1 ? 'Terminar' : 'Siguiente fragmento'" :disabled="currentSegment >= durations.length">
             {{ currentSegment == durations.length - 1 ? '⏹' : '⏭' }}
           </button>
         </div>
 
-        <!-- Volumen -->
+        <p v-if="audioError" class="c-white text-center" role="status">No se pudo reproducir el fragmento.</p>
 
         <!-- Input para adivinar -->
         <div class="mb-4 mx-auto flex-col" style="max-width: 400px">
@@ -110,7 +115,7 @@
     </div>
 
     <!-- Audio oculto -->
-    <audio ref="audioPlayer" type="audio/mpeg" hidden></audio>
+    <audio ref="audioPlayer" type="audio/mpeg" hidden @playing="audioPlaying = true" @pause="audioPlaying = false" @ended="audioPlaying = false"></audio>
     <p class="aclaracion">Las canciones se eligen aleatoriamente de la playlist de TDL.</p>
     </div>
   </main>
@@ -144,6 +149,12 @@ export default {
       progress: localStorage.getItem('progressEN') || 0,
       terminado: localStorage.getItem('terminadoEN') || 0,
       interval: null,
+      audioPlaying: false,
+      audioPending: false,
+      audioError: false,
+      skipFeedback: false,
+      skipTimer: null,
+      playbackRequest: 0,
       modalFin: false,
       mostrarOpciones: false,
       mostrarCopiado: false,
@@ -159,6 +170,11 @@ export default {
     this.audioPlayer = this.$refs.audioPlayer
     this.loadRandomTracks()
     this.fetchPlaylist()
+  },
+  beforeUnmount() {
+    this.stopSegment()
+    clearTimeout(this.skipTimer)
+    clearInterval(this.timer)
   },
   unmounted() {
     document.removeEventListener('click', this.handleClickOutside)
@@ -325,6 +341,8 @@ export default {
     },
 
     async setCurrentTrack(index) {
+      this.stopSegment()
+      this.audioError = false
       this.currentGameIndex = index
       this.currentTrack = this.tracksDelDia[index]
       this.message = ''
@@ -375,29 +393,44 @@ export default {
       }
     },
 
-    async playSegment() {
-      try {
-        await this.audioPlayer.load() // fuerza carga
-        await this.audioPlayer.play()
-      } catch (err) {
-        console.error('No se pudo reproducir el audio:', err)
-        return
-      }
-
-      const duration = this.durations[this.currentSegment]
-      const startTime = this.cumulativeDurations[this.currentSegment] - duration
-      const endTime = this.cumulativeDurations[this.currentSegment]
-
-      this.audioPlayer.currentTime = startTime
-
+    stopSegment() {
+      this.playbackRequest++
+      this.audioPending = false
+      this.audioPlayer?.pause()
       clearInterval(this.interval)
+    },
+
+    togglePlayback() {
+      if (this.audioPlaying || this.audioPending) this.stopSegment()
+      else this.playSegment()
+    },
+
+    async playSegment() {
+      this.stopSegment()
+      const request = this.playbackRequest
+      const duration = this.durations[this.currentSegment]
+      const endTime = this.cumulativeDurations[this.currentSegment]
+      const startTime = endTime - duration
+      this.audioPending = true
+      this.audioError = false
+      try {
+        this.audioPlayer.currentTime = startTime
+        await this.audioPlayer.play()
+      } catch {
+        if (request === this.playbackRequest) this.audioError = true
+        return
+      } finally {
+        if (request === this.playbackRequest) this.audioPending = false
+      }
+      if (request !== this.playbackRequest) return
+
       this.progress = startTime / this.totalDuration
       localStorage.setItem('progressEN', this.progress)
 
       this.interval = setInterval(() => {
         const elapsed = this.audioPlayer.currentTime
         this.progress = Math.min(elapsed / this.totalDuration, endTime / this.totalDuration)
-        if (elapsed >= endTime) {
+        if (elapsed >= endTime || this.audioPlayer.ended) {
           this.audioPlayer.pause()
           clearInterval(this.interval)
           this.progress = endTime / this.totalDuration
@@ -406,6 +439,10 @@ export default {
     },
 
     nextSegment() {
+      this.stopSegment()
+      this.skipFeedback = true
+      clearTimeout(this.skipTimer)
+      this.skipTimer = setTimeout(() => { this.skipFeedback = false }, 450)
       if (this.currentSegment < this.durations.length - 1) {
         this.currentSegment++
         this.historial.push('⏭')
@@ -483,9 +520,6 @@ export default {
           return matchesB - matchesA
         })
     },
-  },
-  beforeUnmount() {
-    clearInterval(this.interval)
   },
 }
 </script>

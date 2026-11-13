@@ -110,6 +110,8 @@ export default {
             errorLienzo: false,
             lienzoRequest: null,
             pixelesPendientes: [],
+            canvasInstance: null,
+            canvasRevision: -1,
             socketConectado: false,
             fullscreenHandler: null,
             socket: null,
@@ -196,25 +198,6 @@ addColorPersonalizado(){
     }
 },
         // ── Canvas ────────────────────────────────────────────────────────────
-        iniciarCanvas(flatPixels) {
-            const canvas = this.$refs.canvas
-            this.ctx = canvas.getContext('2d')
-            const img = this.ctx.createImageData(CANVAS_SIZE, CANVAS_SIZE)
-
-            const pixels = new Uint32Array(img.data.buffer)
-            pixels.fill(0xffffffff)
-            for (let i = 0; i < flatPixels.length; i++) {
-                const hex = flatPixels[i]
-                if (hex === '#FFFFFF') continue
-                const rgb = Number.parseInt(hex.slice(1), 16)
-                const offset = i * 4
-                img.data[offset] = rgb >> 16
-                img.data[offset + 1] = (rgb >> 8) & 255
-                img.data[offset + 2] = rgb & 255
-            }
-            this.ctx.putImageData(img, 0, 0)
-        },
-
         dibujarPixel(x, y, color) {
             if (!this.ctx) return
             const [r, g, b] = this.hexToRgb(color)
@@ -405,10 +388,20 @@ addColorPersonalizado(){
             this.errorLienzo = false
             this.pixelesPendientes = []
             try {
-                const { data } = await axios.get('/place/canvas', { signal: request.signal, timeout: 20000 })
-                if (request.signal.aborted) return
-                this.iniciarCanvas(data.canvas)
-                for (const { x, y, color } of this.pixelesPendientes) this.dibujarPixel(x, y, color)
+                const { data, headers } = await axios.get('/place/canvas.png', {
+                    responseType: 'blob', signal: request.signal, timeout: 20000,
+                })
+                const image = await createImageBitmap(data)
+                try {
+                    if (request.signal.aborted) return
+                    this.ctx = this.$refs.canvas.getContext('2d')
+                    this.ctx.drawImage(image, 0, 0)
+                    this.canvasInstance = headers['x-canvas-instance']
+                    this.canvasRevision = Number(headers['x-canvas-revision'])
+                    for (const pixel of this.pixelesPendientes) this.aplicarPixel(pixel)
+                } finally {
+                    image.close()
+                }
             } catch {
                 if (!request.signal.aborted) this.errorLienzo = true
             } finally {
@@ -418,6 +411,12 @@ addColorPersonalizado(){
                     this.lienzoRequest = null
                 }
             }
+        },
+
+        aplicarPixel(pixel) {
+            if (pixel.instance !== this.canvasInstance || pixel.revision <= this.canvasRevision) return
+            this.dibujarPixel(pixel.x, pixel.y, pixel.color)
+            this.canvasRevision = pixel.revision
         },
 
         conectarSocket() {
@@ -433,7 +432,7 @@ addColorPersonalizado(){
             })
             this.socket.on('place:pixel', (pixel) => {
                 if (this.cargando) this.pixelesPendientes.push(pixel)
-                else this.dibujarPixel(pixel.x, pixel.y, pixel.color)
+                else this.aplicarPixel(pixel)
             })
             this.socket.on('place:canvas-reset', () => {
                 this.cargarTiempoRestanteCiclo()

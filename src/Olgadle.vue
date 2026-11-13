@@ -36,7 +36,9 @@
     </div>
   </div>
   <main class="container game-page pb-4">
-    <GameHeader logo="/logo.png" titulo="OLGAdle" descripcion="Adiviná el integrante de hoy." />
+    <GameHeader logo="/logo.png" titulo="OLGAdle" descripcion="Adiviná el integrante de hoy.">
+      <button type="button" class="game-head-action" @click="mostrarTutorial = true">Tutorial</button>
+    </GameHeader>
     <div class="game-panel">
     <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
       <div class="panel-spinner"></div>
@@ -44,7 +46,6 @@
 
     <span v-else>
       <span v-if="terminado == 0">
-        <button class="btn-ok mb-2 c-yellow" @click="mostrarTutorial = true">Tutorial</button>
         <div class="attempts text-center mb-2">{{ intentos }} {{ Number(intentos) === 1 ? 'intento' : 'intentos' }}</div>
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px">
