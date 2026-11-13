@@ -36,10 +36,7 @@
     </div>
   </div>
   <main class="container game-page pb-4">
-    <header class="game-head">
-      <img src="/logo.png" alt="" width="68" height="68" />
-      <div><h1 class="game-title">OLGAdle</h1><p>Adiviná el integrante de hoy.</p></div>
-    </header>
+    <GameHeader logo="/logo.png" titulo="OLGAdle" descripcion="Adiviná el integrante de hoy." />
     <div class="game-panel">
     <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
       <div class="panel-spinner"></div>
@@ -143,8 +140,10 @@
 </template>
 
 <script>
+import GameHeader from './GameHeader.vue'
 import axios from 'axios'
 export default {
+  components: { GameHeader },
   name: 'OlgadleApp',
   data() {
     return {

@@ -1,9 +1,6 @@
 <template>
   <main class="container game-page pb-4">
-    <header class="game-head">
-      <img src="/enunanota.png" alt="" width="68" height="68" />
-      <div><h1 class="game-title">En una nota</h1><p>Adiviná la canción de hoy.</p></div>
-    </header>
+    <GameHeader logo="/enunanota.png" titulo="En una nota" descripcion="Adiviná la canción de hoy." />
     <div class="game-panel">
 
     <div v-if="currentTrack && !cargando">
@@ -120,8 +117,10 @@
 </template>
 
 <script>
+import GameHeader from './GameHeader.vue'
 import axios from 'axios'
 export default {
+  components: { GameHeader },
   data() {
     const savedTracks = JSON.parse(localStorage.getItem('tracksDelDia')) || []
     const savedIndex = parseInt(localStorage.getItem('currentGameIndex')) || 0

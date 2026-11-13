@@ -25,11 +25,8 @@
   </div>
 
   <main class="container game-page pb-4">
-    <header class="game-head">
-      <img src="/quienes.png" alt="" width="68" height="68" />
-      <div><h1 class="game-title">¿Quién es?</h1><p>Adiviná quién está en la foto.</p></div>
-    </header>
-    <div class="game-panel">
+    <GameHeader logo="/quienes.png" titulo="¿Quién es?" descripcion="Adiviná quién está en la foto." />
+    <div class="game-panel photo-game-panel">
     <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
       <div class="panel-spinner"></div>
     </div>
@@ -102,8 +99,10 @@
 </template>
 
 <script>
+import GameHeader from './GameHeader.vue'
 import axios from 'axios'
 export default {
+  components: { GameHeader },
   name: 'OlgadleApp',
   data() {
     return {

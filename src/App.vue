@@ -9,7 +9,7 @@ const juegos = [
 
 <template>
   <div class="arcade" :class="juegos.find(juego => juego.ruta === $route.path)?.color">
-    <router-link v-if="$route.path !== '/'" class="arcade-back" to="/" aria-label="Volver a los juegos">←</router-link>
+    <router-link v-if="$route.path !== '/' && !juegos.some(juego => juego.ruta === $route.path)" class="arcade-back" to="/" aria-label="Volver a los juegos">←</router-link>
 
     <main v-if="$route.path === '/'" class="arcade-home" aria-label="Juegos">
       <div class="game-grid">

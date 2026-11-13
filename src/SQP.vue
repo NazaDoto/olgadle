@@ -1,9 +1,8 @@
 <template>
     <main class="container sqp-page pb-4">
-        <header class="game-head">
-            <img src="/sqp.png" alt="" width="68" height="68" />
-            <div><h1 class="game-title">Soñé que pintaba</h1><p>Se reinicia en <strong>{{ tiempoRestanteFormateado }}</strong></p></div>
-        </header>
+        <GameHeader logo="/sqp.png" titulo="Soñé que pintaba" descripcion="Pintá con la gentuza.">
+            <p class="game-head-timer">Se reinicia en <strong>{{ tiempoRestanteFormateado }}</strong></p>
+        </GameHeader>
 
         <div class="place-layout" ref="placeLayout">
             <section class="canvas-section" aria-label="Lienzo">
@@ -85,6 +84,7 @@
 </template>
 
 <script>
+import GameHeader from './GameHeader.vue'
 import axios from 'axios'
 import { io } from 'socket.io-client'
 
@@ -99,6 +99,7 @@ const PALETA = [
 ]
 
 export default {
+    components: { GameHeader },
     name: 'SonePintaba',
 
     data() {
