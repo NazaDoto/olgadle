@@ -256,17 +256,18 @@ addColorPersonalizado(){
             const newZoom = Math.min(8, Math.max(1, +(this.zoom + step).toFixed(2)))
             if (newZoom === oldZoom) return
 
-            const rect = viewport.getBoundingClientRect()
-            const relativeX = e.clientX - rect.left
-            const relativeY = e.clientY - rect.top
-            const worldX = viewport.scrollLeft + relativeX
-            const worldY = viewport.scrollTop + relativeY
-            const scaleFactor = newZoom / oldZoom
+            const canvas = this.$refs.canvas
+            const before = canvas.getBoundingClientRect()
+            const anchorX = (e.clientX - before.left) / before.width
+            const anchorY = (e.clientY - before.top) / before.height
 
             this.zoom = newZoom
+            this.cursorInfo = null
+            this.hoverPixel = null
             this.$nextTick(() => {
-                viewport.scrollLeft = worldX * scaleFactor - relativeX
-                viewport.scrollTop = worldY * scaleFactor - relativeY
+                const after = canvas.getBoundingClientRect()
+                viewport.scrollLeft += after.left + anchorX * after.width - e.clientX
+                viewport.scrollTop += after.top + anchorY * after.height - e.clientY
             })
         },
 
@@ -313,8 +314,8 @@ addColorPersonalizado(){
         actualizarViewportMedidas() {
             const viewport = this.$refs.canvasViewport
             if (!viewport) return
-            this.viewportWidth = viewport.clientWidth
-            this.viewportHeight = viewport.clientHeight
+            this.viewportWidth = viewport.offsetWidth - 2 * viewport.clientLeft
+            this.viewportHeight = viewport.offsetHeight - 2 * viewport.clientTop
         },
 
         iniciarObserverViewport() {
@@ -661,10 +662,11 @@ addColorPersonalizado(){
 }
 
 .canvas-viewport {
-    position: relative;
-    flex: 1;
-    min-height: 0;
+    position: absolute;
+    inset: 0;
     overflow: auto;
+    overflow-anchor: none;
+    scrollbar-gutter: stable;
     background: #0e0e10;
     border-radius: 6px;
     border: 1px solid #3a3a3d;
