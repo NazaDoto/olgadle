@@ -9,13 +9,9 @@ const juegos = [
 
 <template>
   <div class="arcade" :class="juegos.find(juego => juego.ruta === $route.path)?.color">
-    <header class="arcade-nav">
-      <router-link class="arcade-brand" to="/">OLGA<span>dle</span></router-link>
-      <router-link v-if="$route.path !== '/'" class="arcade-back" to="/">← Juegos</router-link>
-    </header>
+    <router-link v-if="$route.path !== '/'" class="arcade-back" to="/" aria-label="Volver a los juegos">←</router-link>
 
-    <main v-if="$route.path === '/'" class="arcade-home">
-      <h1>Elegí tu juego<span>.</span></h1>
+    <main v-if="$route.path === '/'" class="arcade-home" aria-label="Juegos">
       <div class="game-grid">
         <router-link v-for="juego in juegos" :key="juego.ruta" :to="juego.ruta" class="game-card" :class="juego.color">
           <div class="game-card-art"><img :src="juego.imagen" alt="" width="148" height="148" /></div>
