@@ -10,6 +10,13 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3501',
+      '/uploads': 'http://localhost:3501',
+      '/place-socket': { target: 'http://localhost:3501', ws: true },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

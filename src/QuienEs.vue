@@ -123,6 +123,7 @@ export default {
       aciertos: 0,
       terminado: localStorage.getItem('terminadoQE') || 0,
       mostrarOpciones: false,
+      ronda: null,
       version: localStorage.getItem('version') || null,
     }
   },
@@ -158,15 +159,9 @@ export default {
   },
 
   methods: {
-    async restart() {
-      this.historial = [];
-      this.intentos = 5;
-      this.terminado = 0;
-      this.fetchIntegranteQE();
-    },
     async checkVersion() {
       try {
-        const response = await axios.get('/api/version')
+        const response = await axios.get('/version')
         if (this.version != response.data.version) {
           this.version = response.data.version
           localStorage.clear()
@@ -202,21 +197,22 @@ export default {
     async fetchIntegranteQE() {
       this.cargando = true;
       try {
-        const response = await axios.get('/integranteQE')
-
-        if (localStorage.getItem('integranteQE') && localStorage.getItem('integranteQE') != response.data.integrante) {
+        const { data } = await axios.get('/integranteQE')
+        if (localStorage.getItem('integranteQERonda') !== String(data.ronda)) {
           localStorage.removeItem('integranteQE')
           localStorage.removeItem('terminadoQE')
           localStorage.removeItem('historialQE')
           localStorage.removeItem('intentosQE')
-          await this.restart();
-        } else {
-          this.integranteOculto = this.integrantes[response.data.integrante]
-          this.intentosTotales = response.data.intentosTotalesQE
-          this.aciertos = response.data.aciertosQE
-          this.startTimer(response.data.tiempoRestante)
+          this.historial = []
+          this.intentos = 5
+          this.terminado = 0
         }
-        localStorage.setItem('integranteQE', response.data.integrante)
+        this.ronda = data.ronda
+        this.integranteOculto = data.integrante
+        this.intentosTotales = data.intentosTotalesQE
+        this.aciertos = data.aciertosQE
+        this.startTimer(data.tiempoRestante)
+        localStorage.setItem('integranteQERonda', data.ronda)
       } catch (error) {
         console.log('error' + error)
       } finally {
@@ -225,7 +221,7 @@ export default {
     },
     async postIntento(valor) {
       try {
-        const response = await axios.post('/intentoQE', { intento: valor })
+        const response = await axios.post('/intentoQE', { intento: Number(valor), ronda: this.ronda })
         this.intentosTotales = response.data.intentosTotalesQE
         this.aciertos = response.data.aciertosQE
       } catch (error) {
@@ -326,7 +322,7 @@ export default {
   async mounted() {
     this.checkVersion()
     document.addEventListener('click', this.handleClickOutside)
-    this.fetchIntegrantes()
+    await this.fetchIntegrantes()
     await this.fetchIntegranteQE()
   },
   unmounted() {

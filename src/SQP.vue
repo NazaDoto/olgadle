@@ -144,7 +144,8 @@ export default {
             youtubeLiveVideoId: '',
             youtubeRefreshInterval: null,
             youtubeStatusMessage: '',
-            tiempoRestanteCiclo: 0,
+            proximoResetAt: null,
+            relojCiclo: Date.now(),
             cicloTickerInterval: null,
             cicloRefreshInterval: null,
             externalEmbedErrorHandler: null,
@@ -348,7 +349,7 @@ addColorPersonalizado(){
                 this.youtubeStatusMessage = this.youtubeLiveVideoId
                     ? ''
                     : 'No se detectó un vivo activo en este momento.'
-            } catch (_err) {
+            } catch {
                 this.youtubeLiveVideoId = ''
                 this.youtubeStatusMessage = 'No se pudo consultar YouTube ahora.'
             }
@@ -356,11 +357,10 @@ addColorPersonalizado(){
 
         async cargarTiempoRestanteCiclo() {
             try {
-                console.log('fetch tiempo restante')
                 const { data } = await axios.get('/place/reset-info')
-                console.log(data)
-                this.tiempoRestanteCiclo = Math.max(0, Number(data?.tiempoRestante || 0))
-            } catch (_err) {
+                this.proximoResetAt = data.proximoResetAt
+                this.relojCiclo = Date.now()
+            } catch {
                 // Si falla, dejamos que el contador local siga.
             }
         },
@@ -394,10 +394,10 @@ addColorPersonalizado(){
 
         // ── Socket ────────────────────────────────────────────────────────────
         conectarSocket() {
-            this.socket = io("https://olgadle.nazadoto.com", {
-    path: "/place-socket",
-    transports: ["websocket"], // 🔥 importante
-})
+            this.socket = io({
+                path: '/place-socket',
+                transports: ['websocket'],
+            })
 
         this.socket.on('connect', async () => {
     console.log('🟢 conectado')
@@ -421,6 +421,7 @@ addColorPersonalizado(){
 
 
             this.socket.on('place:canvas-reset', async () => {
+                this.cargarTiempoRestanteCiclo()
                 try {
                     const { data } = await axios.get('/place/canvas')
                     this.iniciarCanvas(data.canvas)
@@ -465,7 +466,8 @@ addColorPersonalizado(){
             return `https://www.youtube.com/live_chat?v=${this.youtubeLiveVideoId}&embed_domain=${domain}`
         },
         tiempoRestanteFormateado() {
-            const total = Math.max(0, Math.floor(this.tiempoRestanteCiclo))
+            if (!this.proximoResetAt) return '—'
+            const total = Math.max(0, Math.ceil((this.proximoResetAt - this.relojCiclo) / 1000))
             if (total >= 86400) {
                 const dias = Math.ceil(total / 86400)
                 return dias === 1 ? '1 día' : `${dias} días`
@@ -488,7 +490,7 @@ addColorPersonalizado(){
         this.cargarYoutubeLiveVideoId()
     }, 60000)
     this.cicloTickerInterval = setInterval(() => {
-        this.tiempoRestanteCiclo = Math.max(0, this.tiempoRestanteCiclo - 1)
+        this.relojCiclo = Date.now()
     }, 1000)
     this.cicloRefreshInterval = setInterval(() => {
         this.cargarTiempoRestanteCiclo()

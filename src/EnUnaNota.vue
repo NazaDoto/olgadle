@@ -148,6 +148,7 @@ export default {
       mostrarOpciones: false,
       mostrarCopiado: false,
       playlist: JSON.parse(localStorage.getItem('playlist')) || [],
+      ronda: null,
       version: localStorage.getItem('version') || null,
       cargando: false,
     }
@@ -165,7 +166,7 @@ export default {
   methods: {
     async checkVersion() {
       try {
-        const response = await axios.get('/api/version')
+        const response = await axios.get('/version')
         if (this.version != response.data.version) {
           this.version = response.data.version
           localStorage.clear()
@@ -183,7 +184,7 @@ export default {
     },
     async postIntento(valor) {
       try {
-        const response = await axios.post('/intentoEN', { intento: valor })
+        const response = await axios.post('/intentoEN', { intento: Number(valor), ronda: this.ronda })
         this.intentosTotales = response.data.intentosTotalesEN
         this.aciertos = response.data.aciertosEN
       } catch (error) {
@@ -293,54 +294,33 @@ export default {
     },
     async loadRandomTracks() {
       this.cargando = true
-      // Si ya hay canciones en localStorage, las cargamos
-      if (this.tracksDelDia.length == 0) {
-        try {
-          const res = await axios.get('/api/random-tracks') // 🔥 ahora endpoint devuelve 3
-          this.tracksDelDia = res.data.tracks
-          this.intentosTotales = res.data.intentosTotalesEN
-          this.aciertos = res.data.aciertosEN
+      try {
+        const { data } = await axios.get('/random-tracks')
+        if (localStorage.getItem('rondaEN') !== String(data.ronda)) {
+          this.currentGameIndex = 0
           this.currentSegment = 0
           this.terminado = 0
-          this.startTimer(res.data.tiempoRestante)
-          localStorage.setItem('terminadoEN', 0)
-          localStorage.setItem('tracksDelDia', JSON.stringify(this.tracksDelDia))
-          localStorage.setItem('currentGameIndex', 0)
-          localStorage.setItem('currentSegment', 0)
+          this.intentos = 0
+          this.historial = []
           this.progress = 0
-          localStorage.setItem('progressEN', this.progress)
-          this.setCurrentTrack(0) // empieza en la primera canción
-        } catch (error) {
-          console.error('Error cargando tracks:', error)
-        } finally {
-          this.cargando = false
+          localStorage.setItem('terminadoEN', 0)
+          localStorage.setItem('intentosEN', 0)
+          localStorage.setItem('historialEN', '[]')
+          localStorage.setItem('currentSegment', 0)
+          localStorage.setItem('progressEN', 0)
         }
-      } else {
-        try {
-          const res = await axios.get('/api/random-tracks')
-          const sonIguales =
-            this.tracksDelDia.length === res.data.tracks.length &&
-            this.tracksDelDia.every((track, i) => track.id === res.data.tracks[i].id)
-          if (!sonIguales) {
-            this.progress = 0
-            localStorage.setItem('progressEN', this.progress)
-            this.currentSegment = 0
-            localStorage.setItem('currentSegment', 0)
-            this.terminado = 0
-            localStorage.setItem('terminadoEN', 0)
-            localStorage.setItem('currentGameIndex', 0)
-            this.setCurrentTrack(0) // empieza en la primera canción
-            localStorage.setItem('tracksDelDia', JSON.stringify(res.data.tracks))
-          }
-          this.tracksDelDia = res.data.tracks
-          this.setCurrentTrack(this.currentGameIndex)
-          this.intentosTotales = res.data.intentosTotalesEN
-          this.aciertos = res.data.aciertosEN
-          this.startTimer(res.data.tiempoRestante)
-        } catch (error) {
-        } finally {
-          this.cargando = false
-        }
+        this.ronda = data.ronda
+        this.tracksDelDia = data.tracks
+        this.intentosTotales = data.intentosTotalesEN
+        this.aciertos = data.aciertosEN
+        localStorage.setItem('rondaEN', data.ronda)
+        localStorage.setItem('tracksDelDia', JSON.stringify(data.tracks))
+        this.startTimer(data.tiempoRestante)
+        await this.setCurrentTrack(this.currentGameIndex)
+      } catch (error) {
+        console.error('Error cargando tracks:', error)
+      } finally {
+        this.cargando = false
       }
     },
 

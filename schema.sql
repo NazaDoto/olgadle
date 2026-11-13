@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS integrantes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    genero VARCHAR(100) NOT NULL DEFAULT '',
+    rol VARCHAR(255) NOT NULL DEFAULT '',
+    canta VARCHAR(20) NOT NULL DEFAULT 'No',
+    hizo VARCHAR(255) NOT NULL DEFAULT '',
+    nacio VARCHAR(100) NOT NULL DEFAULT '',
+    img VARCHAR(255) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS programas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS integrante_programa (
+    id_integrante INT NOT NULL,
+    id_programa INT NOT NULL,
+    PRIMARY KEY (id_integrante, id_programa),
+    FOREIGN KEY (id_integrante) REFERENCES integrantes (id) ON DELETE CASCADE,
+    FOREIGN KEY (id_programa) REFERENCES programas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

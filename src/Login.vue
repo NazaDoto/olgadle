@@ -39,8 +39,10 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
-  name: "Login",
+  name: "AdminLogin",
 
   data() {
     return {
@@ -50,20 +52,17 @@ export default {
   },
 
   methods: {
-    login() {
-
-      if (this.username === "admin" && this.password === "olgadle@4pp") {
-
-        localStorage.setItem("logged", "true")
-
-        this.$router.push("/admin")
-
-      } else {
-
-        alert("Credenciales incorrectas")
-
+    async login() {
+      try {
+        const { data } = await axios.post("/login", {
+          username: this.username,
+          password: this.password,
+        })
+        sessionStorage.setItem("adminToken", data.token)
+        await this.$router.push("/admin")
+      } catch (error) {
+        alert(error.response?.data?.error || "No se pudo iniciar sesión")
       }
-
     }
   }
 }

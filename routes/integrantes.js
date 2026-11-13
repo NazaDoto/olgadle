@@ -1,22 +1,29 @@
 import { Router } from 'express'
-import db from '../db.js'
+import db, { transaction } from '../db.js'
+import { adminAuth } from '../middleware/auth.js'
 
 const router = Router()
 
-router.get('/', async (req, res) => {
-    const [rows] = await db.query(`
+export async function listarIntegrantes(connection = db) {
+    const [rows] = await connection.query(`
     SELECT i.*, GROUP_CONCAT(p.nombre) programas
     FROM integrantes i
     LEFT JOIN integrante_programa ip ON i.id = ip.id_integrante
     LEFT JOIN programas p ON ip.id_programa = p.id
     GROUP BY i.id
+    ORDER BY i.id
   `)
-    const data = rows.map(i => ({
+    return rows.map(i => ({
         ...i,
         programas: i.programas ? i.programas.split(',') : [],
     }))
-    res.json(data)
+}
+
+router.get('/', async (_req, res) => {
+    res.json(await listarIntegrantes())
 })
+
+router.use(adminAuth)
 
 router.post('/', async (req, res) => {
     const { nombre, genero, rol, canta, hizo, nacio, img } = req.body
@@ -43,8 +50,10 @@ router.post('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        await db.query('DELETE FROM integrante_programa WHERE id_integrante = ?', [req.params.id])
-        await db.query('DELETE FROM integrantes WHERE id = ?', [req.params.id])
+        await transaction(async (connection) => {
+            await connection.query('DELETE FROM integrante_programa WHERE id_integrante = ?', [req.params.id])
+            await connection.query('DELETE FROM integrantes WHERE id = ?', [req.params.id])
+        })
         res.json({ ok: true })
     } catch (err) {
         console.error(err)

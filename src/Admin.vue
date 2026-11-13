@@ -254,7 +254,7 @@
 import axios from 'axios'
 
 export default {
-  name: 'Admin',
+  name: 'AdminPanel',
 
   data() {
     return {
@@ -304,7 +304,7 @@ export default {
         const prog = this.programas.find((p) => p.nombre === programa)
 
         if (prog) {
-          await axios.post('/integrante-programa', {
+          await axios.post('/integrantes/programas/asignar', {
             id_integrante: id,
             id_programa: prog.id,
           })
@@ -406,7 +406,7 @@ export default {
       const nuevoProgramaId = res.data.id
 
       // asignar al integrante
-      await axios.post('/integrante-programa', {
+      await axios.post('/integrantes/programas/asignar', {
         id_integrante: integrante.id,
         id_programa: nuevoProgramaId,
       })
@@ -421,7 +421,7 @@ export default {
 
 
     async quitarPrograma(integrante, programa) {
-      await axios.post('/quitar-programa', {
+      await axios.post('/integrantes/programas/quitar', {
         id_integrante: integrante.id,
         programa,
       })
@@ -494,7 +494,7 @@ export default {
     async agregarPrograma(integrante) {
       if (!integrante.nuevoPrograma) return
 
-      await axios.post('/integrante-programa', {
+      await axios.post('/integrantes/programas/asignar', {
         id_integrante: integrante.id,
         id_programa: integrante.nuevoPrograma,
       })

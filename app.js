@@ -1,7 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import fs from 'fs'
-import https from 'https'
 import http from 'http'
 import { Server } from 'socket.io'
 
@@ -9,9 +7,10 @@ import config from './config.js'
 import adminRoutes from './routes/admin.js'
 import integrantesRoutes from './routes/integrantes.js'
 import playlistRoutes from './routes/playlist.js'
-import juegoRoutes from './routes/juego.js'
+import juegoRoutes, { initGame } from './routes/juego.js'
 import placeRoutes, { initCanvas, setupPlaceSockets } from './routes/place.js'
-import { verificarTiming } from './routes/juego.js'
+import { adminAuth } from './middleware/auth.js'
+import db from './db.js'
 
 const app = express()
 
@@ -22,46 +21,26 @@ app.use(cors())
 // ── Rutas ──────────────────────────────────────────────────────────────────
 app.use('/api/integrantes', integrantesRoutes)
 app.use('/api', playlistRoutes)
-app.use('/api', juegoRoutes)      // tiene rutas como /integrante, /api/random-tracks
+app.use('/api', juegoRoutes)      // tiene rutas como /integrante y /random-tracks
 app.use('/api', adminRoutes)      // tiene /login, /upload
 app.use('/api', placeRoutes)      // tiene /place/canvas, etc.
 
-// Programas (simple, lo dejamos en app.js por ser pequeño)
-import db from './db.js'
+// Programas
 app.get('/api/programas', async (req, res) => {
     const [rows] = await db.query('SELECT * FROM programas')
     res.json(rows)
 })
-app.post('/api/programas', async (req, res) => {
+app.post('/api/programas', adminAuth, async (req, res) => {
     const [result] = await db.query('INSERT INTO programas(nombre) VALUES (?)', [req.body.nombre])
     res.json({ id: result.insertId })
 })
 
 // ── Inicialización ─────────────────────────────────────────────────────────
 await initCanvas()
-await verificarTiming()
+await initGame()
 
 // ── Servidor + Socket.io ───────────────────────────────────────────────────
-let server
-/*
-if (config.ENV === 'prod') {
-    const httpsOptions = {
-        key: fs.readFileSync(config.SSL.key),
-        cert: fs.readFileSync(config.SSL.cert),
-    }
-    server = https.createServer(httpsOptions, app)
-    server.listen(config.PORT, () => {
-        console.log(`🌐 HTTPS en https://olgadle.nazadoto.com:${config.PORT}`)
-    })
-} else {
-    server = http.createServer(app)
-    server.listen(config.PORT, () => {
-        console.log(`🖥️ HTTP en http://localhost:${config.PORT}`)
-    })
-}
-*/
-
-server = http.createServer(app)
+const server = http.createServer(app)
 server.listen(config.PORT, () => {
     console.log(`🖥️ HTTP en http://localhost:${config.PORT}`)
 })

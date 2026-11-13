@@ -47,17 +47,8 @@ const router = createRouter({
 })
 
 
-// 🔐 guard de autenticación
-router.beforeEach((to, from, next) => {
-
-    const logged = localStorage.getItem("logged")
-
-    if (to.meta.requiresAuth && !logged) {
-        next("/login")
-    } else {
-        next()
-    }
-
+router.beforeEach((to) => {
+    if (to.meta.requiresAuth && !sessionStorage.getItem("adminToken")) return "/login"
 })
 
 export default router

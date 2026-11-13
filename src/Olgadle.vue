@@ -159,6 +159,7 @@ export default {
       integrantes: JSON.parse(localStorage.getItem('integrantes')) || [],
       integranteOculto: null,
       intentos: Number(localStorage.getItem('intentos')) || 7,
+      ronda: null,
       version: localStorage.getItem('version') || null,
       intento: '',
       intentosTotales: 0,
@@ -199,15 +200,9 @@ export default {
   },
 
   methods: {
-    async reset() {
-      this.historial = [];
-      this.intentos = 7;
-      this.terminado = 0;
-      this.fetchIntegrante();
-    },
     async checkVersion() {
       try {
-        const response = await axios.get('/api/version')
+        const response = await axios.get('/version')
         if (this.version != response.data.version) {
           this.version = response.data.version
           localStorage.clear()
@@ -274,22 +269,22 @@ export default {
     async fetchIntegrante() {
       this.cargando = true;
       try {
-        const response = await axios.get('/integrante')
-        this.integranteOculto = this.integrantes[response.data.integrante]
-        this.intentosTotales = response.data.intentosTotales
-        this.aciertos = response.data.aciertos
-        this.startTimer(response.data.tiempoRestante)
-        if (
-          localStorage.getItem('integranteOculto') &&
-          localStorage.getItem('integranteOculto') != response.data.integrante
-        ) {
+        const { data } = await axios.get('/integrante')
+        if (localStorage.getItem('integranteRonda') !== String(data.ronda)) {
           localStorage.removeItem('integranteOculto')
           localStorage.removeItem('terminado')
           localStorage.removeItem('historial')
           localStorage.removeItem('intentos')
-          this.reset();
+          this.historial = []
+          this.intentos = 7
+          this.terminado = 0
         }
-        localStorage.setItem('integranteOculto', response.data.integrante)
+        this.ronda = data.ronda
+        this.integranteOculto = data.integrante
+        this.intentosTotales = data.intentosTotales
+        this.aciertos = data.aciertos
+        this.startTimer(data.tiempoRestante)
+        localStorage.setItem('integranteRonda', data.ronda)
       } catch (error) {
         console.log('error' + error)
       } finally {
@@ -324,7 +319,7 @@ export default {
     },
     async postIntento(valor) {
       try {
-        const response = await axios.post('/intento', { intento: valor })
+        const response = await axios.post('/intento', { intento: Number(valor), ronda: this.ronda })
         console.log(response)
         this.intentosTotales = response.data.intentosTotales
         this.aciertos = response.data.aciertos

@@ -1,7 +1,8 @@
 import { Router } from 'express'
+import { gzipSync } from 'node:zlib'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import db from '../db.js'
+import db, { transaction } from '../db.js'
 import config from '../config.js'
 import { verifySocketToken } from '../middleware/auth.js'
 
@@ -11,7 +12,7 @@ const YT_API_BASE = 'https://www.googleapis.com/youtube/v3'
 const PLACE_RESET_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000  // 30 días
 let youtubeChannelIdCache = config.YOUTUBE?.channelId || ''
 let placeIo = null
-let lastPlaceResetAt = Date.now()
+
 async function extraerVideoIdDesdePaginaLive(handle) {
     const livePageResp = await fetch(`https://www.youtube.com/@${handle}/live`)
     if (!livePageResp.ok) return null
@@ -39,7 +40,7 @@ export async function initCanvas() {
       user_id INT DEFAULT NULL,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (x, y)
-    )
+    ) ENGINE=InnoDB
   `)
     await db.query(`
     CREATE TABLE IF NOT EXISTS place_users (
@@ -67,6 +68,33 @@ export async function initCanvas() {
     )
 `)
 
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS canvas_cycle (
+            id TINYINT PRIMARY KEY,
+            next_reset_at BIGINT UNSIGNED NOT NULL
+        ) ENGINE=InnoDB
+    `)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS canvas_cycle_snapshots (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            size INT NOT NULL,
+            rgb_gzip MEDIUMBLOB NOT NULL,
+            saved_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB
+    `)
+    const [[cycle]] = await db.query('SELECT id FROM canvas_cycle WHERE id = 1')
+    if (!cycle) {
+        const configuredStart = config.PLACE_CYCLE_STARTED_AT
+        const [[{ lastSnapshot }]] = await db.query(
+            'SELECT UNIX_TIMESTAMP(MAX(saved_at)) * 1000 AS lastSnapshot FROM canvas_snapshots'
+        )
+        const startedAt = configuredStart ? Date.parse(configuredStart) : Number(lastSnapshot || Date.now())
+        if (!Number.isFinite(startedAt) || startedAt > Date.now()) {
+            throw new Error('PLACE_CYCLE_STARTED_AT debe ser una fecha válida en el pasado')
+        }
+        await db.query('INSERT IGNORE INTO canvas_cycle VALUES (1, ?)', [startedAt + PLACE_RESET_INTERVAL_MS])
+    }
+
   const [[{ count }]] = await db.query('SELECT COUNT(*) as count FROM canvas_pixels')
   const expectedCount = CANVAS_SIZE * CANVAS_SIZE
 
@@ -87,33 +115,46 @@ export async function initCanvas() {
   }
 }
 
-export async function resetCanvasForNewCycle() {
-    // Guardar snapshot antes de borrar
-    const [pixels] = await db.query('SELECT x, y, color FROM canvas_pixels ORDER BY y, x')
+function flattenCanvas(pixels) {
     const flat = new Array(CANVAS_SIZE * CANVAS_SIZE).fill('#FFFFFF')
-    pixels.forEach(p => { flat[p.y * CANVAS_SIZE + p.x] = p.color })
-    await db.query('INSERT INTO canvas_snapshots (snapshot) VALUES (?)', [JSON.stringify(flat)])
-    console.log('📸 Snapshot guardado')
-
-    await db.query("UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL")
-    if (placeIo) placeIo.emit('place:canvas-reset')
-    console.log('🧼 Canvas reseteado para nuevo ciclo')
+    for (const { x, y, color } of pixels) {
+        if (x >= 0 && x < CANVAS_SIZE && y >= 0 && y < CANVAS_SIZE) {
+            flat[y * CANVAS_SIZE + x] = color
+        }
+    }
+    return flat
 }
 
-async function ensureWeeklyCanvasReset() {
-    const now = Date.now()
-
-    if (now - lastPlaceResetAt < PLACE_RESET_INTERVAL_MS) return
-
-    await resetCanvasForNewCycle()
-
-    // 🔥 CLAVE: reiniciar desde AHORA
-    lastPlaceResetAt = now
+async function withCanvasCycle(work) {
+    const result = await transaction(async (connection) => {
+        const [[cycle]] = await connection.query('SELECT next_reset_at FROM canvas_cycle WHERE id = 1 FOR UPDATE')
+        let nextResetAt = Number(cycle.next_reset_at)
+        const now = Date.now()
+        const reset = now >= nextResetAt
+        if (reset) {
+            const [pixels] = await connection.query('SELECT x, y, color FROM canvas_pixels')
+            const rgb = Buffer.alloc(CANVAS_SIZE * CANVAS_SIZE * 3, 255)
+            for (const { x, y, color } of pixels) {
+                if (x >= 0 && x < CANVAS_SIZE && y >= 0 && y < CANVAS_SIZE) {
+                    rgb.writeUIntBE(Number.parseInt(color.slice(1), 16), (y * CANVAS_SIZE + x) * 3, 3)
+                }
+            }
+            await connection.execute('INSERT INTO canvas_cycle_snapshots (size, rgb_gzip) VALUES (?, ?)', [
+                CANVAS_SIZE, gzipSync(rgb),
+            ])
+            await connection.query("UPDATE canvas_pixels SET color = '#FFFFFF', user_id = NULL")
+            const elapsedCycles = Math.floor((now - nextResetAt) / PLACE_RESET_INTERVAL_MS) + 1
+            nextResetAt += elapsedCycles * PLACE_RESET_INTERVAL_MS
+            await connection.query('UPDATE canvas_cycle SET next_reset_at = ? WHERE id = 1', [nextResetAt])
+        }
+        return { nextResetAt, reset, value: await work?.(connection) }
+    })
+    if (result.reset) placeIo?.emit('place:canvas-reset')
+    return result
 }
 
-function tiempoRestanteResetPlaceSegundos() {
-    const nextResetAt = lastPlaceResetAt + PLACE_RESET_INTERVAL_MS
-    return Math.max(0, Math.floor((nextResetAt - Date.now()) / 1000))
+async function checkCanvasCycle() {
+    await withCanvasCycle()
 }
 
 // ── Auth routes ───────────────────────────────────────────────────────────
@@ -133,7 +174,7 @@ router.post('/place/register', async (req, res) => {
         'INSERT INTO place_users (username, password_hash) VALUES (?, ?)',
         [username, hash]
     )
-    const token = jwt.sign({ id: result.insertId, username }, JWT_SECRET, { expiresIn: '30d' })
+    const token = jwt.sign({ id: result.insertId, username }, JWT_SECRET, { audience: 'place', expiresIn: '30d' })
     res.json({ token, username })
 })
 
@@ -145,29 +186,21 @@ router.post('/place/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) return res.status(400).json({ error: 'Usuario o contraseña incorrectos' })
 
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' })
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { audience: 'place', expiresIn: '30d' })
     res.json({ token, username: user.username })
 })
 
 // ── Canvas GET ────────────────────────────────────────────────────────────
-router.get('/place/canvas', async (req, res) => {
-    await ensureWeeklyCanvasReset()
-    const [pixels] = await db.query(
-        'SELECT x, y, color FROM canvas_pixels ORDER BY y, x'
-    )
-    const flat = new Array(CANVAS_SIZE * CANVAS_SIZE).fill('#FFFFFF')
-    pixels.forEach(p => { flat[p.y * CANVAS_SIZE + p.x] = p.color })
-    res.json({ canvas: flat, size: CANVAS_SIZE })
+router.get('/place/canvas', async (_req, res) => {
+    await checkCanvasCycle()
+    const [pixels] = await db.query('SELECT x, y, color FROM canvas_pixels')
+    res.json({ canvas: flattenCanvas(pixels), size: CANVAS_SIZE })
 })
 
 router.get('/place/reset-info', async (_req, res) => {
-    console.log('reset-info')
-    await ensureWeeklyCanvasReset()
-    console.log('ensureWeeklyCanvasReset')
-    const nextResetAt = lastPlaceResetAt + PLACE_RESET_INTERVAL_MS
-    console.log(tiempoRestanteResetPlaceSegundos())
+    const { nextResetAt } = await withCanvasCycle()
     res.json({
-        tiempoRestante: tiempoRestanteResetPlaceSegundos(),
+        tiempoRestante: Math.max(0, Math.ceil((nextResetAt - Date.now()) / 1000)),
         proximoResetAt: nextResetAt,
         intervaloMs: PLACE_RESET_INTERVAL_MS,
     })
@@ -185,14 +218,10 @@ router.get('/place/youtube-live-id', async (_req, res) => {
     const apiKey = config.YOUTUBE?.apiKey
     const handle = config.YOUTUBE?.handle || 'olgaenvivo_'
 
-    if (!apiKey) {
-        return res.status(503).json({ error: 'YouTube API key no configurada' })
-    }
-
     try {
         let videoId = null
 
-        if (!youtubeChannelIdCache) {
+        if (apiKey && !youtubeChannelIdCache) {
             const channelResp = await fetch(
                 `${YT_API_BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${encodeURIComponent(apiKey)}`
             )
@@ -202,7 +231,7 @@ router.get('/place/youtube-live-id', async (_req, res) => {
             }
         }
 
-        if (youtubeChannelIdCache) {
+        if (apiKey && youtubeChannelIdCache) {
             const searchResp = await fetch(
                 `${YT_API_BASE}/search?part=id&channelId=${encodeURIComponent(youtubeChannelIdCache)}&eventType=live&type=video&maxResults=1&key=${encodeURIComponent(apiKey)}`
             )
@@ -228,26 +257,33 @@ router.get('/place/youtube-live-id', async (_req, res) => {
 
 export function setupPlaceSockets(io) {
     placeIo = io
+    const pollCycle = async () => {
+        try {
+            await checkCanvasCycle()
+        } catch (error) {
+            console.error('Error verificando el ciclo de SQP:', error.message)
+        } finally {
+            setTimeout(pollCycle, 1000).unref()
+        }
+    }
+    void pollCycle()
     io.on('connection', (socket) => {
         console.log('🟢 cliente conectado', socket.id)
         socket.on('place:pixel', async (data) => {
-            console.log('📩 pixel recibido', data)
-            await ensureWeeklyCanvasReset()
-            const now = Date.now()
-            const { x, y, color } = data
-            if (x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) return
-            if (!/^#[0-9A-Fa-f]{6}$/.test(color)) return
-            console.log('dibujando pixel', x, y, color)
+            const { x, y, color } = data || {}
+            if (!Number.isInteger(x) || !Number.isInteger(y) ||
+                x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) return
+            if (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color)) return
             try {
-                await db.query(
-                    'UPDATE canvas_pixels SET color=?, user_id=? WHERE x=? AND y=?',
-                    [color, null, x, y]
-                )
-            } catch (err) {
-                console.error(err)
+                await withCanvasCycle((connection) => connection.query(
+                    'UPDATE canvas_pixels SET color=?, user_id=NULL WHERE x=? AND y=?',
+                    [color, x, y]
+                ))
+                io.emit('place:pixel', { x, y, color })
+            } catch (error) {
+                console.error('Error guardando píxel:', error.message)
+                socket.emit('place:error', 'No se pudo guardar el píxel')
             }
-            console.log('pixel dibujado', x, y, color)
-            io.emit('place:pixel', { x, y, color })
         })
 
         socket.on('chat:message', async (data) => {

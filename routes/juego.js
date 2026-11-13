@@ -1,147 +1,128 @@
 import { Router } from 'express'
 import fetch from 'node-fetch'
 import config from '../config.js'
+import db, { transaction } from '../db.js'
 import { fetchPlaylist } from './playlist.js'
+import { listarIntegrantes } from './integrantes.js'
 
 const router = Router()
 
-// ── Estado compartido del juego (se resetea cada 12hs) ───────────────────
-const state = {
-    integranteIndex: null,
-    integranteQEIndex: null,
-    ultimaAsignacion: null,
-    intentosTotales: 0,
-    aciertos: 0,
-    intentosTotalesEN: 0,
-    aciertosEN: 0,
-    intentosTotalesQE: 0,
-    aciertosQE: 0,
-    cancionesActuales: [],
+export async function initGame() {
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS game_round (
+            id TINYINT PRIMARY KEY,
+            ends_at BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            integrante JSON,
+            integrante_qe JSON,
+            songs JSON,
+            attempts INT UNSIGNED NOT NULL DEFAULT 0,
+            wins INT UNSIGNED NOT NULL DEFAULT 0,
+            attempts_qe INT UNSIGNED NOT NULL DEFAULT 0,
+            wins_qe INT UNSIGNED NOT NULL DEFAULT 0,
+            attempts_en INT UNSIGNED NOT NULL DEFAULT 0,
+            wins_en INT UNSIGNED NOT NULL DEFAULT 0
+        ) ENGINE=InnoDB
+    `)
+    await db.query('INSERT IGNORE INTO game_round (id) VALUES (1)')
 }
 
-async function asignarNuevaCancion() {
-    const data = await fetchPlaylist(true)
-    if (!data?.tracks?.data?.length) {
-        console.error('❌ Playlist vacía al asignar canciones')
-        return
-    }
-    const canciones = []
-    const usados = new Set()
-    let intentos = 0
-    while (canciones.length < 3 && intentos < 50) {
-        const idx = Math.floor(Math.random() * data.tracks.data.length)
-        const track = data.tracks.data[idx]
-        if (track.preview && !usados.has(track.id)) {
-            canciones.push({ id: track.id })
-            usados.add(track.id)
+async function withRound(work) {
+    return transaction(async (connection) => {
+        const [[round]] = await connection.query('SELECT * FROM game_round WHERE id = 1 FOR UPDATE')
+        if (round.ends_at <= Date.now()) {
+            const integrantes = await listarIntegrantes(connection)
+            const pick = () => integrantes[Math.floor(Math.random() * integrantes.length)] || null
+            round.integrante = pick()
+            round.integrante_qe = pick()
+            round.ends_at = Date.now() + config.INTERVALO_MS
+            round.songs = null
+            round.attempts = round.wins = round.attempts_qe = round.wins_qe = round.attempts_en = round.wins_en = 0
+            await connection.query(`
+                UPDATE game_round SET ends_at=?, integrante=?, integrante_qe=?, songs=NULL,
+                    attempts=0, wins=0, attempts_qe=0, wins_qe=0, attempts_en=0, wins_en=0 WHERE id=1
+            `, [round.ends_at, JSON.stringify(round.integrante), JSON.stringify(round.integrante_qe)])
         }
-        intentos++
-    }
-    state.cancionesActuales = canciones
-    console.log('🎵 Canciones asignadas:', canciones.map(c => c.id).join(', '))
-}
-
-export async function verificarTiming() {
-    const { INTERVALO_MS, TOTAL_INTEGRANTES } = config
-    if (!state.ultimaAsignacion || Date.now() - state.ultimaAsignacion >= INTERVALO_MS) {
-        await asignarNuevaCancion()
-        Object.assign(state, {
-            intentosTotales: 0,
-            aciertos: 0,
-            intentosTotalesEN: 0,
-            aciertosEN: 0,
-            intentosTotalesQE: 0,
-            aciertosQE: 0,
-            integranteIndex: Math.floor(Math.random() * TOTAL_INTEGRANTES),
-            integranteQEIndex: Math.floor(Math.random() * TOTAL_INTEGRANTES),
-            ultimaAsignacion: Date.now(),
-        })
-        console.log('🔁 Nuevo ciclo de juego iniciado')
-    }
-}
-
-function tiempoRestanteSegundos() {
-    return Math.floor((config.INTERVALO_MS - (Date.now() - state.ultimaAsignacion)) / 1000)
-}
-
-// ── Olgadle ───────────────────────────────────────────────────────────────
-router.get('/integrante', async (req, res) => {
-    await verificarTiming()
-    res.json({
-        integrante: state.integranteIndex,
-        tiempoRestante: tiempoRestanteSegundos(),
-        intentosTotales: state.intentosTotales,
-        aciertos: state.aciertos,
+        return work(round, connection)
     })
-})
+}
 
-router.post('/intento', (req, res) => {
-    state.intentosTotales++
-    if (req.body.intento == 1) state.aciertos++
-    res.json({ intentosTotales: state.intentosTotales, aciertos: state.aciertos })
-})
+const remaining = (round) => Math.max(0, Math.ceil((round.ends_at - Date.now()) / 1000))
 
-// ── Enkidle ───────────────────────────────────────────────────────────────
-router.get('/api/random-tracks', async (req, res) => {
-    try {
-        await verificarTiming()
-        if (!state.cancionesActuales.length) {
-            return res.status(404).json({ error: 'Sin canciones asignadas' })
+for (const [suffix, columnSuffix] of [['', ''], ['QE', '_qe'], ['EN', '_en']]) {
+    const attempts = 'attempts' + columnSuffix
+    const wins = 'wins' + columnSuffix
+    const stats = (round) => ({
+        ['intentosTotales' + suffix]: round[attempts],
+        ['aciertos' + suffix]: round[wins],
+    })
+    if (suffix !== 'EN') {
+        router.get('/integrante' + suffix, async (_req, res) => {
+            const round = await withRound((current) => current)
+            const integrante = round['integrante' + columnSuffix]
+            if (!integrante) return res.status(404).json({ error: 'Sin integrantes para esta ronda' })
+            res.json({ integrante, ronda: round.ends_at, tiempoRestante: remaining(round), ...stats(round) })
+        })
+    }
+    router.post('/intento' + suffix, async (req, res) => {
+        const { intento, ronda } = req.body || {}
+        if (intento !== 0 && intento !== 1) return res.status(400).json({ error: 'Intento inválido' })
+        const result = await withRound(async (round, connection) => {
+            if (ronda !== round.ends_at) return null
+            round[attempts]++
+            round[wins] += intento
+            await connection.query(`UPDATE game_round SET ${attempts}=?, ${wins}=? WHERE id=1`, [
+                round[attempts], round[wins],
+            ])
+            return stats(round)
+        })
+        if (!result) return res.status(409).json({ error: 'La ronda cambió' })
+        res.json(result)
+    })
+}
+
+router.get('/random-tracks', async (_req, res) => {
+    let round = await withRound((current) => current)
+    if (!round.songs) {
+        const playlist = await fetchPlaylist()
+        const candidates = [...new Set((playlist?.tracks?.data || []).filter((track) => track.preview).map((track) => track.id))]
+        const songs = []
+        while (songs.length < 3 && candidates.length) {
+            songs.push(candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0])
         }
-        const tracks = []
-        for (const song of state.cancionesActuales) {
-            const r = await fetch(`https://api.deezer.com/track/${song.id}`)
-            if (!r.ok) continue
-            const t = await r.json()
-            if (t?.preview) {
-                tracks.push({
-                    id: t.id,
-                    title: t.title,
-                    artist: t.artist.name,
-                    album: t.album.title,
-                    preview: t.preview,
-                    cover: t.album.cover_medium,
-                })
+        round = await withRound(async (current, connection) => {
+            if (!current.songs && songs.length) {
+                await connection.query('UPDATE game_round SET songs=? WHERE id=1', [JSON.stringify(songs)])
+                current.songs = songs
             }
-        }
-        if (!tracks.length) return res.status(404).json({ error: 'Sin preview válido' })
-        res.json({
-            tracks,
-            tiempoRestante: tiempoRestanteSegundos(),
-            intentosTotalesEN: state.intentosTotalesEN,
-            aciertosEN: state.aciertosEN,
+            return current
         })
-    } catch (err) {
-        console.error('❌ /api/random-tracks:', err)
-        res.status(500).json({ error: 'Error al obtener tracks' })
     }
-})
-
-router.post('/intentoEN', (req, res) => {
-    state.intentosTotalesEN++
-    if (req.body.intento == 1) state.aciertosEN++
-    res.json({ intentosTotalesEN: state.intentosTotalesEN, aciertosEN: state.aciertosEN })
-})
-
-// ── Quiénes Éramos ────────────────────────────────────────────────────────
-router.get('/integranteQE', async (req, res) => {
-    await verificarTiming()
+    if (!round.songs?.length) return res.status(404).json({ error: 'Sin canciones asignadas' })
+    const tracks = await Promise.all(round.songs.map(async (id) => {
+        const response = await fetch(`https://api.deezer.com/track/${id}`, { signal: AbortSignal.timeout(8000) })
+        if (!response.ok) return null
+        const track = await response.json()
+        if (!track?.preview) return null
+        return {
+            id: track.id,
+            title: track.title,
+            artist: track.artist.name,
+            album: track.album.title,
+            preview: track.preview,
+            cover: track.album.cover_medium,
+        }
+    })).catch(() => null)
+    if (!tracks?.every(Boolean)) return res.status(503).json({ error: 'No se pudieron cargar las canciones' })
     res.json({
-        integrante: state.integranteQEIndex,
-        tiempoRestante: tiempoRestanteSegundos(),
-        intentosTotalesQE: state.intentosTotalesQE,
-        aciertosQE: state.aciertosQE,
+        tracks,
+        ronda: round.ends_at,
+        tiempoRestante: remaining(round),
+        intentosTotalesEN: round.attempts_en,
+        aciertosEN: round.wins_en,
     })
 })
 
-router.post('/intentoQE', (req, res) => {
-    state.intentosTotalesQE++
-    if (req.body.intento == 1) state.aciertosQE++
-    res.json({ intentosTotalesQE: state.intentosTotalesQE, aciertosQE: state.aciertosQE })
-})
-
-// ── Versión ───────────────────────────────────────────────────────────────
-router.get('/api/version', (req, res) => {
+router.get('/version', (_req, res) => {
     res.json({ version: 0.7 })
 })
 

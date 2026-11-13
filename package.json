@@ -8,9 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
+    "start": "node --env-file-if-exists=.env app.js",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix",
+    "lint": "eslint .",
     "format": "prettier --write src/"
   },
   "dependencies": {

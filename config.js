@@ -1,32 +1,29 @@
-const ENV = process.env.NODE_ENV || 'prod'
+import os from 'node:os'
+import path from 'node:path'
+import { randomBytes } from 'node:crypto'
 
 export default {
-    ENV,
-    PORT: 3501,
-    JWT_SECRET: process.env.JWT_SECRET || 'place_secret_dev',
+    PORT: Number(process.env.PORT || 3501),
+    JWT_SECRET: process.env.JWT_SECRET || randomBytes(32).toString('hex'),
+    ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     DB: {
-        host: 'localhost',
-        user: 'root',
-        password: ENV === 'prod' ? 'Nazacapo341746$' : '2112',
-        database: 'olgadle',
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT || 3306),
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME || 'olgadle',
         waitForConnections: true,
         connectionLimit: 10,
-        queueLimit: 0,
     },
-    SSL: {
-        cert : 
-            "/etc/letsencrypt/live/nazadoto.com/fullchain.pem",
-        
-        key : "/etc/letsencrypt/live/nazadoto.com/privkey.pem",
-        
-    },
+    UPLOAD_TEMP: path.join(os.tmpdir(), 'olgadle-uploads'),
     INTERVALO_MS: 12 * 60 * 60 * 1000,
     CANVAS_SIZE: 1000,
+    PLACE_CYCLE_STARTED_AT: process.env.PLACE_CYCLE_STARTED_AT,
     YOUTUBE: {
-        apiKey: process.env.YOUTUBE_API_KEY || 'AIzaSyB8JFz4XdDl62ny4LiA-dMnY6o_SNEw2s0',
+        apiKey: process.env.YOUTUBE_API_KEY,
         handle: process.env.YOUTUBE_CHANNEL_HANDLE || 'olgaenvivo_',
         channelId: process.env.YOUTUBE_CHANNEL_ID || 'UCX1UZ1AYTY_R3oG5Nc3S7Ww',
     },
-    TOTAL_INTEGRANTES: 55,
     DEEZER_PLAYLIST: '14879715523',
 }

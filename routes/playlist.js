@@ -14,7 +14,7 @@ export async function fetchPlaylist(force = false) {
             return playlistCache
         }
         console.log('🔄 Refrescando playlist desde Deezer...')
-        const res = await fetch(`https://api.deezer.com/playlist/${config.DEEZER_PLAYLIST}`)
+        const res = await fetch(`https://api.deezer.com/playlist/${config.DEEZER_PLAYLIST}`, { signal: AbortSignal.timeout(8000) })
         if (!res.ok) throw new Error('Error Deezer')
         const data = await res.json()
         if (!data.tracks?.data) throw new Error('Playlist vacía')
