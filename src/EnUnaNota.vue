@@ -1,5 +1,5 @@
 <template>
-  <main class="container game-page pb-4">
+  <main class="game-page pb-4">
     <GameHeader logo="/enunanota.png" titulo="En una nota" descripcion="Adiviná la canción de hoy." />
     <div class="game-panel">
 

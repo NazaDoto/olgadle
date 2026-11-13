@@ -1,5 +1,5 @@
 <template>
-    <main class="container sqp-page pb-4">
+    <main class="game-page sqp-page pb-4">
         <GameHeader logo="/sqp.png" titulo="Soñé que pintaba" descripcion="Pintá con la gentuza.">
             <p class="game-head-timer">Se reinicia en <strong>{{ tiempoRestanteFormateado }}</strong></p>
         </GameHeader>

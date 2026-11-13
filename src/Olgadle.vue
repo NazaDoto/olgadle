@@ -23,21 +23,26 @@
       <button class="btn-ok c-red" @click="modalFin = false">Cerrar</button>
     </div>
   </div>
-  <div class="fondoModal" @click="mostrarTutorial = false" v-if="mostrarTutorial">
-    <div class="containerModal" @click.stop>
-      <div class="headerModal">Tutorial</div>
-      <p class="bodyModal">
-        Primero escribí el nombre de un integrante de OLGA (conductor, productor o técnica).<br />
-        Seguí las pistas que irán apareciendo: <br />🟩Verde = correcto <br />🟨Amarillo = coincide
-        una de los dos, <br />🟥Rojo = incorrecto. <br />
-        Intentá hasta que todas las pistas sean verdes.
-      </p>
-      <button class="btn-ok" @click="mostrarTutorial = false">Entendido!</button>
+  <dialog ref="tutorial" class="tutorial-dialog" aria-labelledby="tutorial-titulo">
+    <div class="tutorial-banner">
+      <img src="/logo.png" alt="" width="44" height="44" />
+      <h2 id="tutorial-titulo">Cómo jugar</h2>
     </div>
-  </div>
-  <main class="container game-page pb-4">
+    <div class="tutorial-body">
+      <p>Elegí un integrante de OLGA. Cada intento te da pistas sobre la respuesta.</p>
+      <ul class="tutorial-clues">
+        <li><span class="tutorial-tile tutorial-correct" aria-hidden="true">✓</span><div><strong>Verde</strong> · Coincide.</div></li>
+        <li><span class="tutorial-tile tutorial-partial" aria-hidden="true">≈</span><div><strong>Amarillo</strong> · Coincide en parte.</div></li>
+        <li><span class="tutorial-tile tutorial-wrong" aria-hidden="true">×</span><div><strong>Rojo</strong> · No coincide.</div></li>
+      </ul>
+      <form method="dialog">
+        <button class="tutorial-close" autofocus>¡A jugar!</button>
+      </form>
+    </div>
+  </dialog>
+  <main class="game-page pb-4">
     <GameHeader logo="/logo.png" titulo="OLGAdle" descripcion="Adiviná el integrante de hoy.">
-      <button type="button" class="game-head-action" @click="mostrarTutorial = true">Tutorial</button>
+      <button type="button" class="game-head-action" @click="$refs.tutorial.showModal()">Tutorial</button>
     </GameHeader>
     <div class="game-panel">
     <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
@@ -151,7 +156,6 @@ export default {
       cargando: true,
       tiempoRestante: '00:00:00',
       timer: null,
-      mostrarTutorial: false,
       mostrarCopiado: false,
       modalFin: false,
       textoModal: '',

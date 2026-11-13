@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <main class="container game-page pb-4">
+  <main class="game-page pb-4">
     <GameHeader logo="/quienes.png" titulo="¿Quién es?" descripcion="Adiviná quién está en la foto." />
     <div class="game-panel photo-game-panel">
     <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
