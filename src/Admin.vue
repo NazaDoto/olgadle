@@ -1,5 +1,5 @@
 <template>
-  <main class="container admin-page py-4">
+  <main class="container admin-page pb-4">
     <header class="admin-header d-flex justify-content-between align-items-center mb-4">
       <h1 class="game-title">Integrantes</h1>
       <div class="d-flex gap-2 flex-wrap">

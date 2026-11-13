@@ -1,5 +1,5 @@
 <template>
-    <main class="container sqp-page py-4">
+    <main class="container sqp-page pb-4">
         <header class="game-head">
             <img src="/sqp.png" alt="" width="68" height="68" />
             <div><h1 class="game-title">Soñé que pintaba</h1><p>Se reinicia en <strong>{{ tiempoRestanteFormateado }}</strong></p></div>

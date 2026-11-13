@@ -47,7 +47,7 @@ body {
 .arcade-home {
   width: min(100% - 1.5rem, 570px);
   margin: 0 auto;
-  padding: clamp(1.25rem, 6vw, 3rem) 0 2rem;
+  padding: 0 0 2rem;
 }
 
 .game-title {
@@ -142,7 +142,7 @@ body {
 .arcade .containerModal { width: min(420px, calc(100% - 2rem)); padding: 1.3rem; box-shadow: 0 12px 50px #0007; }
 .arcade :is(.headerModal, .bodyModal) { color: var(--paper); }
 .arcade .text-muted { color: var(--muted) !important; }
-.arcade .login-page { padding: 4rem 1rem; }
+.arcade .login-page { padding: 0 1rem 2rem; }
 .arcade .login-page .card { width: min(100%, 360px); }
 .arcade .admin-header { flex-wrap: wrap; gap: .8rem; }
 

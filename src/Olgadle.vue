@@ -35,7 +35,7 @@
       <button class="btn-ok" @click="mostrarTutorial = false">Entendido!</button>
     </div>
   </div>
-  <main class="container game-page py-4">
+  <main class="container game-page pb-4">
     <header class="game-head">
       <img src="/logo.png" alt="" width="68" height="68" />
       <div><h1 class="game-title">OLGAdle</h1><p>Adiviná el integrante de hoy.</p></div>

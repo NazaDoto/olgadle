@@ -1,5 +1,5 @@
 <template>
-  <main class="container game-page py-4">
+  <main class="container game-page pb-4">
     <header class="game-head">
       <img src="/enunanota.png" alt="" width="68" height="68" />
       <div><h1 class="game-title">En una nota</h1><p>Adiviná la canción de hoy.</p></div>
