@@ -1,41 +1,28 @@
 <template>
-    <!-- ═══ Layout principal ══════════════════════════════════════════════════ -->
-    <div class="container py-5">
-        <div class="w-fit-content mx-auto">
-            <img src="/sqp.png" class="logo" alt="" />
-        </div>
-        <p class="lead text-center mt-2 mb-4 adivina-container">Pintá y charlá de chill</p>
-        <p class="text-center ciclo-timer mb-3">
-            Reinicio del place en
-            <span class="ciclo-timer">{{ tiempoRestanteFormateado }}</span>
-        </p>
+    <main class="container sqp-page py-4">
+        <header class="game-head">
+            <img src="/sqp.png" alt="" width="68" height="68" />
+            <div><h1 class="game-title">Soñé que pintaba</h1><p>Se reinicia en <strong>{{ tiempoRestanteFormateado }}</strong></p></div>
+        </header>
 
-        <div v-if="cargando" class="loader-container">
-            <div class="spinner"></div>
-        </div>
-
-        <div v-else class="place-layout" ref="placeLayout">
-            <!-- ── Canvas ──────────────────────────────────────────────────────── -->
-            <div class="canvas-section">
-                <!-- Toolbar -->
+        <div class="place-layout" ref="placeLayout">
+            <section class="canvas-section" aria-label="Lienzo">
                 <div class="toolbar mb-2">
-                    <div class="color-palette">
-                        <div v-for="c in paleta" :key="c" class="color-swatch"
+                    <div class="color-palette" role="group" aria-label="Paleta">
+                        <button v-for="c in paleta" :key="c" type="button" class="color-swatch"
                             :class="{ selected: colorSeleccionado === c }" :style="{ background: c }"
-                            @click="colorSeleccionado = c" />
+                            :aria-label="c" :aria-pressed="colorSeleccionado === c"
+                            @click="colorSeleccionado = c"></button>
                     </div>
                     <label class="color-picker-rainbow" title="Color personalizado">
-    <input type="color"
-    v-model="colorPersonalizado"
-    @input="onColorPersonalizado" @change="addColorPersonalizado" />
-</label>
+                        <input type="color" v-model="colorPersonalizado" aria-label="Color personalizado"
+                            @input="onColorPersonalizado" @change="addColorPersonalizado" />
+                    </label>
                     <div class="color-actual" :style="{ background: colorSeleccionado }" title="Color actual" />
-                <button class="fullscreen-btn" @click="toggleFullscreen" title="Pantalla completa">
-    ⛶
-</button>
+                    <button type="button" class="fullscreen-btn" @click="toggleFullscreen" aria-label="Pantalla completa" title="Pantalla completa">⛶</button>
                 </div>
 
-                <!-- Canvas wrapper responsivo -->
+                <div class="canvas-stage">
                 <div class="canvas-viewport" ref="canvasViewport" @wheel.prevent="handleCanvasWheel"
                     @mousedown="startPanDrag" @mousemove="panDragMove" @mouseup="stopPanDrag" @mouseleave="stopPanDrag"
                     :class="{ dragging: isDragging }">
@@ -53,47 +40,48 @@
                 </div>
 
 
-                <!-- Info zoom -->
-                <p class="aclaracion mt-1">Scroll para hacer zoom · Click o "F" para poner tu pixel</p>
-            </div>
-
-            <!-- ── Chat ────────────────────────────────────────────────────────── -->
-            <div class="chat-section">
-                <div class="chat-header">
-                    <span class="chat-title">Comunidad en vivo</span>
+                <div v-if="cargando" class="place-overlay panel-load" role="status" aria-label="Cargando lienzo">
+                    <div class="panel-spinner"></div>
                 </div>
+                <div v-else-if="errorLienzo" class="place-overlay">
+                    <button class="btn-ok" @click="cargarLienzo">Reintentar</button>
+                </div>
+                </div>
+                <p class="aclaracion mt-2">Zoom con la rueda · Pintá con clic o <kbd>F</kbd></p>
+            </section>
+
+            <aside class="chat-section" aria-label="Chat en vivo">
+                <div class="chat-header"><h2 class="chat-title">Chat en vivo</h2></div>
                 <div class="chat-tabs">
                     <button class="chat-tab-btn" :class="{ active: activeChatTab === 'twitch' }"
-                        @click="activeChatTab = 'twitch'">
+                        :aria-pressed="activeChatTab === 'twitch'" @click="activeChatTab = 'twitch'">
                         Twitch
                     </button>
                     <button class="chat-tab-btn" :class="{ active: activeChatTab === 'youtube' }"
-                        @click="activeChatTab = 'youtube'">
+                        :aria-pressed="activeChatTab === 'youtube'" @click="activeChatTab = 'youtube'">
                         YouTube
                     </button>
                 </div>
 
                 <div class="chat-embed-area">
-                    <iframe class="chat-embed-frame" :class="{ hidden: activeChatTab !== 'twitch' }" :src="twitchChatUrl"
-                        title="Chat de Twitch - olgaenvivo" allowfullscreen />
+                    <iframe v-show="activeChatTab === 'twitch'" class="chat-embed-frame" :src="twitchChatUrl"
+                        @load="twitchListo = true" title="Chat de Twitch" />
+                    <iframe v-if="youtubeChatUrl" v-show="activeChatTab === 'youtube'"
+                        :key="youtubeChatUrl" class="chat-embed-frame" :src="youtubeChatUrl"
+                        @load="youtubeListo = true" title="Chat de YouTube" />
 
-                    <iframe v-if="youtubeChatUrl" class="chat-embed-frame"
-                        :class="{ hidden: activeChatTab !== 'youtube' }" :src="youtubeChatUrl"
-                        title="Chat de YouTube - olgaenvivo_" allowfullscreen />
-
-                    <div v-if="activeChatTab === 'youtube' && !youtubeChatUrl" class="chat-embed-fallback">
-                        <p>
-                            {{ youtubeStatusMessage || 'El chat de YouTube necesita el ID del vivo actual.' }}
-                        </p>
+                    <div v-if="cargandoChat" class="place-overlay panel-load" role="status" aria-label="Cargando chat">
+                        <div class="panel-spinner"></div>
+                    </div>
+                    <div v-else-if="activeChatTab === 'youtube' && !youtubeChatUrl" class="chat-embed-fallback">
+                        <p>{{ youtubeStatusMessage }}</p>
                         <a class="chat-open-link" href="https://www.youtube.com/@olgaenvivo_/live" target="_blank"
-                            rel="noopener noreferrer">
-                            Abrir vivo en YouTube
-                        </a>
+                            rel="noopener noreferrer">Abrir en YouTube ↗</a>
                     </div>
                 </div>
-            </div>
+            </aside>
         </div>
-    </div>
+    </main>
 </template>
 
 <script>
@@ -118,12 +106,17 @@ export default {
             CANVAS_SIZE,
             isFPressed: false,
             cargando: true,
+            errorLienzo: false,
+            lienzoRequest: null,
+            pixelesPendientes: [],
+            socketConectado: false,
+            fullscreenHandler: null,
             socket: null,
         lastFPixel: null, // 🔥 agregar esto
 
             // Canvas
             paleta: PALETA,
-            colorSeleccionado: '#E50000',
+            colorSeleccionado: '#FF0000',
             colorPersonalizado: '#E50000',
             ctx: null,
             zoom: 1,
@@ -141,6 +134,9 @@ export default {
 
             // Chat embeds
             activeChatTab: 'twitch',
+            twitchListo: false,
+            youtubeListo: false,
+            buscandoYoutube: false,
             youtubeLiveVideoId: '',
             youtubeRefreshInterval: null,
             youtubeStatusMessage: '',
@@ -164,7 +160,7 @@ addColorPersonalizado(){
     }
 },
         handleKeyDown(e) {
-        if (e.key.toLowerCase() !== 'f') return
+        if (e.key.toLowerCase() !== 'f' || !this.puedePintar) return
         this.isFPressed = true
 
         if (this.hoverPixel) {
@@ -204,13 +200,16 @@ addColorPersonalizado(){
             this.ctx = canvas.getContext('2d')
             const img = this.ctx.createImageData(CANVAS_SIZE, CANVAS_SIZE)
 
+            const pixels = new Uint32Array(img.data.buffer)
+            pixels.fill(0xffffffff)
             for (let i = 0; i < flatPixels.length; i++) {
-                const hex = flatPixels[i] || '#FFFFFF'
-                const [r, g, b] = this.hexToRgb(hex)
-                img.data[i * 4] = r
-                img.data[i * 4 + 1] = g
-                img.data[i * 4 + 2] = b
-                img.data[i * 4 + 3] = 255
+                const hex = flatPixels[i]
+                if (hex === '#FFFFFF') continue
+                const rgb = Number.parseInt(hex.slice(1), 16)
+                const offset = i * 4
+                img.data[offset] = rgb >> 16
+                img.data[offset + 1] = (rgb >> 8) & 255
+                img.data[offset + 2] = rgb & 255
             }
             this.ctx.putImageData(img, 0, 0)
         },
@@ -224,6 +223,7 @@ addColorPersonalizado(){
         },
 
         handleCanvasClick(e) {
+            if (!this.puedePintar) return
             if (this.suppressNextClick) {
                 this.suppressNextClick = false
                 return
@@ -256,7 +256,7 @@ addColorPersonalizado(){
         this.hoverPixel = { x, y }
 
         // 🔥 Si F está apretada y nos movimos a un nuevo pixel, pintar
-        if (this.isFPressed && (this.lastFPixel?.x !== x || this.lastFPixel?.y !== y)) {
+        if (this.puedePintar && this.isFPressed && (this.lastFPixel?.x !== x || this.lastFPixel?.y !== y)) {
             this.lastFPixel = { x, y }
             this.socket.emit('place:pixel', { x, y, color: this.colorSeleccionado })
             this.dibujarPixel(x, y, this.colorSeleccionado)
@@ -343,15 +343,18 @@ addColorPersonalizado(){
         },
 
         async cargarYoutubeLiveVideoId() {
+            if (this.buscandoYoutube) return
+            this.buscandoYoutube = true
             try {
-                const { data } = await axios.get('/place/youtube-live-id')
-                this.youtubeLiveVideoId = data?.videoId || ''
-                this.youtubeStatusMessage = this.youtubeLiveVideoId
-                    ? ''
-                    : 'No se detectó un vivo activo en este momento.'
+                const { data } = await axios.get('/place/youtube-live-id', { timeout: 8000 })
+                const videoId = data?.videoId || ''
+                if (videoId !== this.youtubeLiveVideoId) this.youtubeListo = false
+                this.youtubeLiveVideoId = videoId
+                this.youtubeStatusMessage = 'Sin vivo en YouTube.'
             } catch {
-                this.youtubeLiveVideoId = ''
-                this.youtubeStatusMessage = 'No se pudo consultar YouTube ahora.'
+                this.youtubeStatusMessage = 'No se pudo cargar YouTube.'
+            } finally {
+                this.buscandoYoutube = false
             }
         },
 
@@ -393,46 +396,63 @@ addColorPersonalizado(){
 
 
         // ── Socket ────────────────────────────────────────────────────────────
-        conectarSocket() {
-            this.socket = io({
-                path: '/place-socket',
-                transports: ['websocket'],
-            })
-
-        this.socket.on('connect', async () => {
-    console.log('🟢 conectado')
-    const { data } = await axios.get('/place/canvas')
-    this.cargando = false
-    await this.$nextTick()
-    this.iniciarCanvas(data.canvas)
-    this.actualizarViewportMedidas()
-    this.iniciarObserverViewport()
-    this.centrarViewport()
-})
-
-    this.socket.on('disconnect', () => {
-        console.log('🔴 desconectado')
-    })
-
-    this.socket.on('place:pixel', ({ x, y, color }) => {
-        console.log('pasa para aqui')
-        this.dibujarPixel(x, y, color)
-    })
-
-
-            this.socket.on('place:canvas-reset', async () => {
-                this.cargarTiempoRestanteCiclo()
-                try {
-                    const { data } = await axios.get('/place/canvas')
-                    this.iniciarCanvas(data.canvas)
-                    this.centrarViewport()
-                } catch (e) {
-                    console.error('Error recargando canvas tras reset:', e)
+        async cargarLienzo() {
+            this.lienzoRequest?.abort()
+            const request = new AbortController()
+            this.lienzoRequest = request
+            this.cargando = true
+            this.errorLienzo = false
+            this.pixelesPendientes = []
+            try {
+                const { data } = await axios.get('/place/canvas', { signal: request.signal, timeout: 20000 })
+                if (request.signal.aborted) return
+                this.iniciarCanvas(data.canvas)
+                for (const { x, y, color } of this.pixelesPendientes) this.dibujarPixel(x, y, color)
+            } catch {
+                if (!request.signal.aborted) this.errorLienzo = true
+            } finally {
+                if (!request.signal.aborted) {
+                    this.cargando = false
+                    this.pixelesPendientes = []
+                    this.lienzoRequest = null
                 }
+            }
+        },
+
+        conectarSocket() {
+            this.socket = io({ path: '/place-socket', transports: ['websocket'] })
+            this.socket.on('connect', () => {
+                this.socketConectado = true
+                this.cargarLienzo()
+            })
+            this.socket.on('disconnect', () => {
+                this.socketConectado = false
+                this.isFPressed = false
+                this.lastFPixel = null
+            })
+            this.socket.on('place:pixel', (pixel) => {
+                if (this.cargando) this.pixelesPendientes.push(pixel)
+                else this.dibujarPixel(pixel.x, pixel.y, pixel.color)
+            })
+            this.socket.on('place:canvas-reset', () => {
+                this.cargarTiempoRestanteCiclo()
+                this.cargarLienzo()
             })
         },
     },
+    watch: {
+        activeChatTab(tab) {
+            if (tab === 'youtube' && !this.youtubeLiveVideoId) this.cargarYoutubeLiveVideoId()
+        },
+    },
     computed: {
+        puedePintar() {
+            return this.socketConectado && !this.cargando && !this.errorLienzo
+        },
+        cargandoChat() {
+            if (this.activeChatTab === 'twitch') return !this.twitchListo
+            return this.youtubeChatUrl ? !this.youtubeListo : this.buscandoYoutube
+        },
         renderSize() {
             return this.renderBaseSize * this.zoom
         },
@@ -479,35 +499,33 @@ addColorPersonalizado(){
         },
     },
 
-    async mounted() {
-    this.instalarFiltroErroresEmbeds()
-    this.cargando = true
-
-    await this.cargarYoutubeLiveVideoId()
-    await this.cargarTiempoRestanteCiclo()
-
-    this.youtubeRefreshInterval = setInterval(() => {
-        this.cargarYoutubeLiveVideoId()
-    }, 60000)
-    this.cicloTickerInterval = setInterval(() => {
-        this.relojCiclo = Date.now()
-    }, 1000)
-    this.cicloRefreshInterval = setInterval(() => {
+    mounted() {
+        this.instalarFiltroErroresEmbeds()
+        this.actualizarViewportMedidas()
+        this.iniciarObserverViewport()
+        this.centrarViewport()
         this.cargarTiempoRestanteCiclo()
-    }, 60000)
-
-    this.conectarSocket() // el canvas se carga dentro del evento 'connect'
-    window.addEventListener('keydown', this.handleKeyDown)
-    window.addEventListener('keyup', this.handleKeyUp)
-    document.addEventListener('fullscreenchange', () => {
-        this.$nextTick(() => {
+        this.cargarLienzo()
+        this.conectarSocket()
+        this.youtubeRefreshInterval = setInterval(() => {
+            if (this.activeChatTab === 'youtube') this.cargarYoutubeLiveVideoId()
+        }, 60000)
+        this.cicloTickerInterval = setInterval(() => {
+            this.relojCiclo = Date.now()
+        }, 1000)
+        this.cicloRefreshInterval = setInterval(() => this.cargarTiempoRestanteCiclo(), 60000)
+        window.addEventListener('keydown', this.handleKeyDown)
+        window.addEventListener('keyup', this.handleKeyUp)
+        this.fullscreenHandler = () => {
             this.actualizarViewportMedidas()
             this.centrarViewport()
-        })
-    })
-},
+        }
+        document.addEventListener('fullscreenchange', this.fullscreenHandler)
+    },
 
     unmounted() {
+        this.lienzoRequest?.abort()
+        document.removeEventListener('fullscreenchange', this.fullscreenHandler)
         if (this.socket) this.socket.disconnect()
         if (this.youtubeRefreshInterval) clearInterval(this.youtubeRefreshInterval)
         if (this.cicloTickerInterval) clearInterval(this.cicloTickerInterval)
@@ -517,12 +535,12 @@ addColorPersonalizado(){
             window.removeEventListener('error', this.externalEmbedErrorHandler)
         }
         window.removeEventListener('keydown', this.handleKeyDown)
-    window.removeEventListener('keyup', this.handleKeyUp)
+        window.removeEventListener('keyup', this.handleKeyUp)
     },
 }
 </script>
 
-<style>
+<style scoped>
 .fullscreen-btn {
     width: 36px;
     height: 36px;
@@ -856,22 +874,5 @@ addColorPersonalizado(){
 }
 
 /* ── Auth modal ──────────────────────────────────────────────────────────── */
-.auth-modal {
-    width: 320px;
-}
-
-.auth-modal .form-control {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.link-auth {
-    color: #9146ff;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-.w-100 {
-    width: 100%;
-}
 </style>
+

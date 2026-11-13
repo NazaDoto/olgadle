@@ -1,24 +1,22 @@
 <template>
-  <div class="container py-4">
-    <!-- HEADER -->
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold c-white">Panel de Integrantes</h2>
-
-      <button class="btn btn-success" @click="showModalNuevo = true">➕ Nuevo integrante</button>
-    </div>
-
-    <!-- FILTROS -->
+  <main class="container admin-page py-4">
+    <header class="admin-header d-flex justify-content-between align-items-center mb-4">
+      <h1 class="game-title">Integrantes</h1>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-light" @click="cerrarSesion">Cerrar sesión</button>
+        <button class="btn btn-success" @click="showModalNuevo = true">+ Nuevo integrante</button>
+      </div>
+    </header>
 
     <div class="card shadow-sm mb-4">
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <input v-model="busqueda" class="form-control" placeholder="Buscar integrante..." />
+            <input v-model="busqueda" class="form-control" aria-label="Buscar integrante" placeholder="Buscá un integrante…" />
           </div>
 
           <div class="col-md-6">
-            <select v-model="filtroPrograma" class="form-select">
+            <select v-model="filtroPrograma" aria-label="Filtrar por programa" class="form-select">
               <option value="">Todos los programas</option>
 
               <option v-for="p in programas" :key="p.id" :value="p.nombre">
@@ -30,31 +28,39 @@
       </div>
     </div>
 
-    <!-- GRID -->
-
-    <div class="row g-4">
-      <div v-for="i in integrantesFiltrados" :key="i.id" class="col-xl-4 col-lg-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <!-- CABECERA -->
-
-            <div class="d-flex align-items-center mb-3">
-              <img v-if="i.img" :src="'/uploads/' + i.img" class="rounded me-3"
-                style="width: 70px; height: 70px; object-fit: cover" />
-
-              <div class="flex-grow-1">
-                <input v-model="i.nombre" class="form-control fw-semibold mb-1" />
-
-                <small class="text-muted"> ID: {{ i.id || 'Nuevo' }} </small>
-              </div>
-            </div>
+    <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando integrantes">
+      <div class="panel-spinner"></div>
+    </div>
+    <div v-else-if="errorPanel" class="card card-body mb-3" role="alert">
+      <p>{{ errorPanel }}</p>
+      <button class="btn btn-primary align-self-start" @click="cargarPanel">Reintentar</button>
+    </div>
+    <p v-else-if="!integrantesFiltrados.length" class="card card-body">No hay integrantes para esta búsqueda.</p>
+    <p v-if="mensaje" class="admin-feedback" role="status">{{ mensaje }}</p>
+    <div class="admin-list">
+      <article v-for="i in integrantesFiltrados" :key="i.id" class="card">
+        <div class="admin-summary">
+          <img v-if="i.img" loading="lazy" alt="" :src="'/uploads/' + i.img" width="52" height="52" />
+          <span v-else class="admin-avatar" aria-hidden="true">{{ i.nombre.charAt(0) }}</span>
+          <div class="admin-person">
+            <h2>{{ i.nombre }}</h2>
+            <p>{{ [i.rol, ...i.programas].filter(Boolean).join(' · ') }}</p>
+          </div>
+          <button class="btn btn-outline-light" :aria-expanded="editorId === i.id"
+            :aria-controls="'editor-' + i.id" @click="abrirEditor(i)">
+            {{ editorId === i.id ? 'Cerrar' : 'Editar' }}
+          </button>
+        </div>
+        <div v-if="editorId === i.id" :id="'editor-' + i.id" class="card-body admin-editor">
+            <label class="small" :for="'nombre-' + i.id">Nombre</label>
+            <input :id="'nombre-' + i.id" v-model="i.nombre" class="form-control mb-3" />
 
             <!-- INFO -->
 
             <div class="row g-2">
               <div class="col-6">
-                <label class="small">Genero</label>
-                <select v-model="i.genero" class="form-select form-select-sm">
+                <label class="small">Género</label>
+                <select v-model="i.genero" aria-label="Género" class="form-select form-select-sm">
                   <option>Femenino</option>
                   <option>Masculino</option>
                 </select>
@@ -62,7 +68,7 @@
 
               <div class="col-6">
                 <label class="small">Rol</label>
-                <select v-model="i.rol" class="form-select form-select-sm">
+                <select v-model="i.rol" aria-label="Rol" class="form-select form-select-sm">
                   <option>Técnica</option>
                   <option>Producción</option>
                   <option>Conducción</option>
@@ -71,7 +77,7 @@
 
               <div class="col-6">
                 <label class="small">Canta</label>
-                <select v-model="i.canta" class="form-select form-select-sm">
+                <select v-model="i.canta" aria-label="Canta" class="form-select form-select-sm">
                   <option>Sí</option>
                   <option>No</option>
                 </select>
@@ -79,12 +85,12 @@
 
               <div class="col-6">
                 <label class="small">Nacimiento</label>
-                <input v-model="i.nacio" class="form-control form-control-sm" />
+                <input v-model="i.nacio" aria-label="Nacimiento" class="form-control form-control-sm" />
               </div>
 
               <div class="col-12">
                 <label class="small">Trabajó en</label>
-                <input v-model="i.hizo" class="form-control form-control-sm" />
+                <input v-model="i.hizo" aria-label="Trabajó en" class="form-control form-control-sm" />
               </div>
             </div>
 
@@ -98,17 +104,17 @@
               <span v-for="p in i.programas" :key="p" class="badge bg-primary me-1 mb-1">
                 {{ p }}
 
-                <span class="ms-1" style="cursor: pointer" @click="quitarPrograma(i, p)"> ✖ </span>
+                <button class="admin-chip-remove" :aria-label="'Quitar ' + p" @click="quitarPrograma(i, p)">×</button>
               </span>
             </div>
 
             <!-- seleccionar existente -->
             <div>
 
-              <select v-model="i.nuevoPrograma" class="form-select form-select-sm mb-2" @change="agregarPrograma(i)">
+              <select v-model="i.nuevoPrograma" aria-label="Agregar programa" class="form-select form-select-sm mb-2" @change="agregarPrograma(i)">
                 <option disabled value="">Agregar programa existente</option>
 
-                <option v-for="p in programas" :key="p.id" :value="p.id">
+                <option v-for="p in programas.filter(programa => !i.programas.includes(programa.nombre))" :key="p.id" :value="p.id">
                   {{ p.nombre }}
                 </option>
               </select>
@@ -127,7 +133,7 @@
             <!-- IMAGEN -->
 
             <div class="border rounded p-2 text-center mb-3" @dragover.prevent @drop="dropImagen($event, i)">
-              <input type="file" class="form-control form-control-sm mb-2" @change="subirImagen($event, i)" />
+              <input type="file" accept="image/*" aria-label="Foto del integrante" class="form-control form-control-sm mb-2" @change="subirImagen($event, i)" />
 
               <input type="text" class="form-control form-control-sm" placeholder="Ctrl+V para pegar imagen"
                 @paste="pegarImagen($event, i)" />
@@ -136,22 +142,21 @@
             <!-- ACCIONES -->
 
             <div class="d-flex justify-content-between">
-              <button class="btn btn-danger btn-sm" @click="eliminar(i)">🗑 Eliminar</button>
+              <button class="btn btn-danger btn-sm" @click="eliminar(i)">Eliminar</button>
 
-              <button class="btn btn-primary btn-sm" @click="guardar(i)">💾 Guardar</button>
+              <button class="btn btn-primary btn-sm" @click="guardar(i)">Guardar cambios</button>
             </div>
-          </div>
         </div>
-      </div>
+      </article>
     </div>
-  </div>
+  </main>
 
-  <div class="modalNuevo" v-if="showModalNuevo">
+  <div class="modalNuevo" role="dialog" aria-modal="true" aria-labelledby="nuevo-integrante-titulo" v-if="showModalNuevo">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Nuevo Integrante</h5>
-          <button class="btn-close" @click="showModalNuevo = false"></button>
+          <h2 id="nuevo-integrante-titulo" class="modal-title h5">Nuevo integrante</h2>
+          <button class="btn-close btn-close-white" aria-label="Cerrar" @click="showModalNuevo = false"></button>
         </div>
 
         <div class="modal-body">
@@ -162,7 +167,7 @@
 
           <div class="row">
             <div class="col">
-              <label>Genero</label>
+              <label>Género</label>
               <select v-model="nuevo.genero" class="form-select">
                 <option>Femenino</option>
                 <option>Masculino</option>
@@ -204,10 +209,10 @@
           <div class="mb-2">
             <span v-for="p in nuevo.programas" :key="p" class="badge bg-primary me-1 mb-1">
               {{ p }}
-              <span class="ms-1" style="cursor: pointer" @click="quitarProgramaNuevo(p)"> ✖ </span>
+              <button class="admin-chip-remove" :aria-label="'Quitar ' + p" @click="quitarProgramaNuevo(p)">×</button>
             </span>
           </div>
-          <div class="d-flex flex-row gap-2">
+          <div class="admin-field-row">
 
             <select v-model="nuevo.nuevoPrograma" class="d-flex form-select form-select-sm"
               @change="agregarProgramaNuevo">
@@ -231,9 +236,9 @@
           <div class="border rounded p-2 text-center " @dragover.prevent @drop="dropImagenNuevo">
             <img v-if="nuevo.img" :src="'/uploads/' + nuevo.img" class="img-fluid mb-2"
               style="max-height: 120px" />
-            <div class="d-flex flex-row gap-2 mt-2">
+            <div class="admin-field-row mt-2">
 
-              <input type="file" class="form-control form-control-sm mb-2" @change="subirImagenNuevo" />
+              <input type="file" accept="image/*" aria-label="Foto del integrante" class="form-control form-control-sm mb-2" @change="subirImagenNuevo" />
 
               <input type="text" class="form-control form-control-sm" placeholder="Ctrl+V para pegar imagen"
                 @paste="pegarImagenNuevo" />
@@ -263,6 +268,10 @@ export default {
       busqueda: '',
       filtroPrograma: '',
       showModalNuevo: false,
+      editorId: null,
+      cargando: true,
+      errorPanel: '',
+      mensaje: '',
       nuevo: {
         nombre: '',
         genero: 'Masculino',
@@ -279,13 +288,12 @@ export default {
   },
 
   mounted() {
-    this.cargarIntegrantes()
-    this.cargarProgramas()
+    this.cargarPanel()
   },
   computed: {
     integrantesFiltrados() {
       return this.integrantes.filter((i) => {
-        const matchNombre = i.nombre.toLowerCase().includes(this.busqueda.toLowerCase())
+        const matchNombre = i.nombre.toLowerCase().includes(this.busqueda.trim().toLowerCase())
 
         const matchPrograma = !this.filtroPrograma || i.programas.includes(this.filtroPrograma)
 
@@ -295,6 +303,29 @@ export default {
   },
 
   methods: {
+    async cargarPanel() {
+      this.cargando = true
+      this.errorPanel = ''
+      try {
+        await Promise.all([this.cargarIntegrantes(), this.cargarProgramas()])
+      } catch {
+        this.errorPanel = 'No se pudo cargar el panel.'
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    abrirEditor(integrante) {
+      this.mensaje = ''
+      this.editorId = this.editorId === integrante.id ? null : integrante.id
+      integrante.nuevoPrograma = ''
+    },
+
+    cerrarSesion() {
+      sessionStorage.removeItem('adminToken')
+      this.$router.push('/login')
+    },
+
     async crearIntegrante() {
       const res = await axios.post('/integrantes', this.nuevo)
 
@@ -398,10 +429,9 @@ export default {
     async crearPrograma(integrante) {
       if (!integrante.programaNuevoNombre) return
 
-      // crear programa
-      const res = await axios.post('/programas', {
-        nombre: integrante.programaNuevoNombre,
-      })
+      const nombre = integrante.programaNuevoNombre.trim()
+      if (!nombre) return
+      const res = await axios.post('/programas', { nombre })
 
       const nuevoProgramaId = res.data.id
 
@@ -414,9 +444,8 @@ export default {
       // limpiar campo
       integrante.programaNuevoNombre = ''
 
-      // recargar datos
-      this.cargarIntegrantes()
-      this.cargarProgramas()
+      integrante.programas.push(nombre)
+      await this.cargarProgramas()
     },
 
 
@@ -425,11 +454,10 @@ export default {
         id_integrante: integrante.id,
         programa,
       })
-
-      this.cargarIntegrantes()
+      integrante.programas = integrante.programas.filter((nombre) => nombre !== programa)
     },
     async eliminar(integrante) {
-      if (!confirm('Eliminar integrante?')) return
+      if (!confirm(`¿Eliminar a ${integrante.nombre}?`)) return
 
       await axios.delete('/integrantes/' + integrante.id)
 
@@ -494,32 +522,23 @@ export default {
     async agregarPrograma(integrante) {
       if (!integrante.nuevoPrograma) return
 
+      const programa = this.programas.find((item) => item.id === integrante.nuevoPrograma)
+      if (!programa) return
       await axios.post('/integrantes/programas/asignar', {
         id_integrante: integrante.id,
-        id_programa: integrante.nuevoPrograma,
+        id_programa: programa.id,
       })
-
-      this.cargarIntegrantes()
+      integrante.programas.push(programa.nombre)
+      integrante.nuevoPrograma = ''
     },
 
     async guardar(integrante) {
-      await axios.post('/integrantes/' + integrante.id, integrante)
-
-      alert('Guardado')
-    },
-
-    nuevoIntegrante() {
-      this.integrantes.push({
-        id: null,
-        nombre: '',
-        genero: 'Masculino',
-        rol: 'Producción',
-        canta: 'No',
-        hizo: '',
-        nacio: '',
-        img: '',
-        programas: [],
-      })
+      try {
+        await axios.post('/integrantes/' + integrante.id, integrante)
+        this.mensaje = 'Cambios guardados.'
+      } catch {
+        this.mensaje = 'No se pudieron guardar los cambios.'
+      }
     },
   },
 }

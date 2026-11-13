@@ -1,9 +1,10 @@
 <template>
-  <div class="container py-5">
-    <div class="w-fit-content mx-auto">
-      <img src="/enunanota.png" class="logo" alt="" />
-    </div>
-    <p class="lead text-center mt-2 mb-2 adivina-container">¡Adiviná la canción de hoy!</p>
+  <main class="container game-page py-4">
+    <header class="game-head">
+      <img src="/enunanota.png" alt="" width="68" height="68" />
+      <div><h1 class="game-title">En una nota</h1><p>Adiviná la canción de hoy.</p></div>
+    </header>
+    <div class="game-panel">
 
     <div v-if="currentTrack && !cargando">
       <div v-if="terminado == 0">
@@ -20,12 +21,12 @@
 
         <!-- Controles de reproducción -->
         <div class="d-flex flex-row gap-2 space-between mb-3">
-          <button @click="playSegment" class="btn-ok">▶</button>
+          <button @click="playSegment" class="btn-ok" aria-label="Reproducir">▶</button>
           <div class="text-center">
             <label class="c-white">Volumen: {{ Math.round(volume * 100) }}%</label>
             <input type="range" min="0" max="1" step="0.01" v-model="volume" class="w-100 mt-2" />
           </div>
-          <button @click="nextSegment" :disabled="currentSegment >= durations.length" class="btn-ok">
+          <button @click="nextSegment" aria-label="Siguiente fragmento" :disabled="currentSegment >= durations.length" class="btn-ok">
             {{ currentSegment == durations.length - 1 ? '⏹' : '⏭' }}
           </button>
         </div>
@@ -37,12 +38,12 @@
           <!-- Input y Autocomplete -->
           <div class="mb-4 position-relative" style="max-width: 400px">
             <input ref="inputTrack" v-model="guess" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion()"
-              type="text" class="form-control input-size" placeholder="Escribí el nombre de la canción..." />
+              type="text" class="form-control input-size" aria-label="Nombre de la canción" placeholder="Buscá una canción…" />
 
             <!-- Autocomplete -->
             <ul v-if="mostrarOpciones && opcionesFiltradas.length" ref="containerRef"
               class="list-group position-absolute w-100 select-integrantes mt-1 barra-nav" style="z-index: 10">
-              <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+              <li v-for="(opcion, index) in opcionesFiltradas" :key="index" tabindex="0" @keydown.enter.prevent="adivinar(opcion)" @keydown.space.prevent="adivinar(opcion)" @click="adivinar(opcion)"
                 class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-2 p-2">
                 {{ opcion.title }} - {{ opcion.artist }}
               </li>
@@ -107,15 +108,15 @@
         </div>
       </div>
     </div>
-    <div v-else class="loader-container">
-      <div class="spinner"></div>
-      <p class="c-white">Cargando canción...</p>
+    <div v-else class="panel-load" role="status" aria-label="Cargando">
+      <div class="panel-spinner"></div>
     </div>
 
     <!-- Audio oculto -->
     <audio ref="audioPlayer" type="audio/mpeg" hidden></audio>
     <p class="aclaracion">Las canciones se eligen aleatoriamente de la playlist de TDL.</p>
-  </div>
+    </div>
+  </main>
 </template>
 
 <script>

@@ -24,15 +24,14 @@
     </div>
   </div>
 
-  <div class="container py-5">
-    <div class="w-fit-content mx-auto">
-      <img src="/quienes.png" class="logo" alt="" />
-    </div>
-    <p class="lead text-center mt-2 mb-2 adivina-container">
-      ¡Adiviná de quien es la foto del integrante de OLGA de hoy!
-    </p>
-    <div v-if="cargando" class="loader-container">
-      <div class="spinner"></div>
+  <main class="container game-page py-4">
+    <header class="game-head">
+      <img src="/quienes.png" alt="" width="68" height="68" />
+      <div><h1 class="game-title">¿Quién es?</h1><p>Adiviná quién está en la foto.</p></div>
+    </header>
+    <div class="game-panel">
+    <div v-if="cargando" class="panel-load" role="status" aria-label="Cargando">
+      <div class="panel-spinner"></div>
     </div>
 
     <span v-else>
@@ -41,16 +40,16 @@
           <img :src="'/uploads/' + integranteOculto.img"
             :class="'img-oculta ' + estiloImagen[5 - intentos]" alt="" />
         </div>
-        <div class="c-white text-center mb-2">Tenés {{ intentos }} intentos.</div>
+        <div class="attempts text-center mb-2">{{ intentos }} {{ Number(intentos) === 1 ? 'intento' : 'intentos' }}</div>
         <!-- Input y Autocomplete -->
         <div class="mb-4 position-relative mx-auto" style="max-width: 400px">
           <input ref="inputIntegrante" v-model="intento" @input="mostrarOpciones = true" @keyup.enter="enterSeleccion"
             @keyup.esc="mostrarOpciones = false" type="text" class="form-control input-size"
-            placeholder="Escribí el nombre de algún integrante..." :disabled="!(intentos > 0)" />
+            aria-label="Nombre del integrante" placeholder="Buscá un integrante…" :disabled="!(intentos > 0)" />
           <!-- Autocomplete -->
           <ul v-if="mostrarOpciones && opcionesFiltradas.length && intento != ''" ref="containerRef"
             class="list-group position-absolute w-100 select-integrantes max-h-150 mt-1 barra-nav" style="z-index: 10">
-            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" @click="adivinar(opcion)"
+            <li v-for="(opcion, index) in opcionesFiltradas" :key="index" tabindex="0" @keydown.enter.prevent="adivinar(opcion)" @keydown.space.prevent="adivinar(opcion)" @click="adivinar(opcion)"
               class="list-group-item list-group-item-action cursor-pointer d-flex align-items-center flex-row gap-3 h-50px">
               {{ opcion.nombre }}
             </li>
@@ -98,7 +97,8 @@
         </ul>
       </div>
     </span>
-  </div>
+    </div>
+  </main>
 </template>
 
 <script>

@@ -1,29 +1,29 @@
 <template>
-  <div class="container d-flex justify-content-center align-items-center">
+  <div class="container login-page d-flex justify-content-center align-items-center">
 
-    <div class="card shadow p-4" style="width: 350px;">
+    <div class="card shadow p-4">
 
-      <h3 class="text-center mb-4">Admin Login</h3>
+      <h3 class="text-center mb-4">Administración</h3>
 
       <form @submit.prevent="login">
 
         <div class="mb-3">
-          <label class="form-label">Usuario</label>
+          <label for="admin-username" class="form-label">Usuario</label>
           <input
-            v-model="username"
+            id="admin-username" v-model="username"
             type="text"
             class="form-control"
-            placeholder="Ingrese usuario"
+            autocomplete="username"
           >
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Contraseña</label>
+          <label for="admin-password" class="form-label">Contraseña</label>
           <input
-            v-model="password"
+            id="admin-password" v-model="password"
             type="password"
             class="form-control"
-            placeholder="Ingrese contraseña"
+            autocomplete="current-password"
           >
         </div>
 
